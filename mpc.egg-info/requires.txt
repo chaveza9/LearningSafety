@@ -1,0 +1,12 @@
+casadi
+matplotlib
+numpy
+seaborn
+tqdm
+onnx
+
+[dev]
+black
+mypy
+pytest
+flake8

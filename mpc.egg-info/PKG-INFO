@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: mpc
+Version: 0.0.0
+Summary: Simple nonlinear MPC for obstacle avoidance
+Home-page: https://github.com/dawsonc/obstacle_avoidance_mpc
+Author: Charles Dawson
+Author-email: cbd@mit.edu
+Provides-Extra: dev

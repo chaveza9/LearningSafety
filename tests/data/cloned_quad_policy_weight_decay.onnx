@@ -1,0 +1,591 @@
+pytorch1.13.0:òì
+Ó
+onnx::Cast_0/Cast_output_0/Cast"Cast*	
+to†2µG:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+ß
+/Cast_output_0
+onnx::MatMul_37'/policy_nn/input_linear/MatMul_output_0/policy_nn/input_linear/MatMul"MatMul2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+√
+policy_nn.input_linear.bias
+'/policy_nn/input_linear/MatMul_output_0$/policy_nn/input_linear/Add_output_0/policy_nn/input_linear/Add"Add2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+í
+$/policy_nn/input_linear/Add_output_0)/policy_nn/input_activation/Relu_output_0 /policy_nn/input_activation/Relu"Relu2ñC:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\functional.py(1457): relu
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\activation.py(102): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+∆
+)/policy_nn/input_activation/Relu_output_0
+onnx::MatMul_38)/policy_nn/layer_0_linear/MatMul_output_0 /policy_nn/layer_0_linear/MatMul"MatMul2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+À
+policy_nn.layer_0_linear.bias
+)/policy_nn/layer_0_linear/MatMul_output_0&/policy_nn/layer_0_linear/Add_output_0/policy_nn/layer_0_linear/Add"Add2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+ò
+&/policy_nn/layer_0_linear/Add_output_0+/policy_nn/layer_0_activation/Relu_output_0"/policy_nn/layer_0_activation/Relu"Relu2ñC:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\functional.py(1457): relu
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\activation.py(102): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+»
++/policy_nn/layer_0_activation/Relu_output_0
+onnx::MatMul_39)/policy_nn/layer_1_linear/MatMul_output_0 /policy_nn/layer_1_linear/MatMul"MatMul2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+À
+policy_nn.layer_1_linear.bias
+)/policy_nn/layer_1_linear/MatMul_output_0&/policy_nn/layer_1_linear/Add_output_0/policy_nn/layer_1_linear/Add"Add2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+ò
+&/policy_nn/layer_1_linear/Add_output_0+/policy_nn/layer_1_activation/Relu_output_0"/policy_nn/layer_1_activation/Relu"Relu2ñC:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\functional.py(1457): relu
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\activation.py(102): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+»
++/policy_nn/layer_1_activation/Relu_output_0
+onnx::MatMul_40)/policy_nn/layer_2_linear/MatMul_output_0 /policy_nn/layer_2_linear/MatMul"MatMul2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+À
+policy_nn.layer_2_linear.bias
+)/policy_nn/layer_2_linear/MatMul_output_0&/policy_nn/layer_2_linear/Add_output_0/policy_nn/layer_2_linear/Add"Add2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+ò
+&/policy_nn/layer_2_linear/Add_output_0+/policy_nn/layer_2_activation/Relu_output_0"/policy_nn/layer_2_activation/Relu"Relu2ñC:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\functional.py(1457): relu
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\activation.py(102): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+»
++/policy_nn/layer_2_activation/Relu_output_0
+onnx::MatMul_41)/policy_nn/layer_3_linear/MatMul_output_0 /policy_nn/layer_3_linear/MatMul"MatMul2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+À
+policy_nn.layer_3_linear.bias
+)/policy_nn/layer_3_linear/MatMul_output_0&/policy_nn/layer_3_linear/Add_output_0/policy_nn/layer_3_linear/Add"Add2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+ò
+&/policy_nn/layer_3_linear/Add_output_0+/policy_nn/layer_3_activation/Relu_output_0"/policy_nn/layer_3_activation/Relu"Relu2ñC:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\functional.py(1457): relu
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\activation.py(102): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+∆
++/policy_nn/layer_3_activation/Relu_output_0
+onnx::MatMul_42(/policy_nn/output_linear/MatMul_output_0/policy_nn/output_linear/MatMul"MatMul2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+
+§
+policy_nn.output_linear.bias
+(/policy_nn/output_linear/MatMul_output_036/policy_nn/output_linear/Add"Add2≤C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\container.py(204): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\nn.py(81): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1178): _slow_forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(127): forward
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\nn\modules\module.py(1190): _call_impl
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(891): _trace_and_get_graph_from_model
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(1529): _export
+C:\Users\aschavez\Anaconda3\envs\cbf-clone\lib\site-packages\torch\onnx\utils.py(504): export
+G:\My Drive\PhD\Research\CODES\cbf-imitation\mpc\network_utils.py(12): pytorch_to_nnet
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(205): save_to_onnx
+G:\My Drive\PhD\Research\CODES\cbf-imitation\tests\test_clone_quad_mpc.py(218): <module>
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\_pydev_imps\_pydev_execfile.py(18): execfile
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1496): _exec
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(1489): run
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2177): main
+C:\Program Files\JetBrains\PyCharm 2021.3.3\plugins\python\helpers\pydev\pydevd.py(2195): <module>
+	torch_jit*§ Bpolicy_nn.input_linear.biasJÄ∏9åªJ›Dæ£·õ?gTæ0,Ë>tæk´Œ∫ñÁÈ>§æ5
+ø‚á”∫∏œ»∫ﬂoˆ∫Ò¿	øPÿåøÎ‹ûæ:X)<dÍΩ$∏‚æ|îCøÑƒ∫æ!⁄∫Û
+áºµKª~µΩÓ˜ªt„”æïbÒætˇ(ΩJ=æb>Çdø*¶ Bpolicy_nn.layer_0_linear.biasJÄ¥Bæ¸©ª˝¨ÉºWñMªe“L>ﬂ¶
+ªïÃìΩ-`µªè≤è>H:ÅΩäP¶∫‰E?≥—;ªÕ3Ω ´ëΩJæÔª∫[Â;b∑uælU!ø.__>üô>Û<ΩTV
+ªìn„∫q#OºvHºBXS>Oünø∫\Z?C%⁄ºÕœ¢ª*¶ Bpolicy_nn.layer_1_linear.biasJÄX™⁄>~b>1‡Ω@é	;àñn>aªläΩÆ„9H4æîxFº$Yë>¬ó‡Ωõ
+ªàgãºYCæï}>´iﬂ<˙∫ëßñª‘gﬁ∫—,áΩ∫)^ΩG©ºó;ïË}>Ÿº>—Ò∫≈©	ªÌh•∫¬§∫{¢"ªˇ˜’ª*¶ Bpolicy_nn.layer_2_linear.biasJÄ®t#æhu æ¢E“∫ 4>£êæ
+Ég=¯Î4æ˙q'æ°,æq–Ωl⁄ÏºÖ≠<Ïa:Ω”aœºB≤ºmb—∫8}Ìπ≈–æR æa≥‡π–#¢∫∑;úª˝€ºHæ⁄Ω⁄…º:˛ΩF¬–ª†JÊΩ‰ó ∫⁄æ.æ);Ïπcz3Ω*¶ Bpolicy_nn.layer_3_linear.biasJÄ†vyπÍ2æ—∑;∏ª\&Ω:∫Å≤º÷∏ÀΩÊ9æÀGΩ©˛ÚπaVΩq‰}ªÓ´/ºb¥ùπNS'>
+˛≥>J>æ$◊HΩvÏCπı’#Ωæ3fπDΩ!óëº4rçº:Å6∫âª‘DΩ,øûΩ.æ&Ω∫ÌNª1o>*0Bpolicy_nn.output_linear.biasJ«z†>°]4=x∫7Ω*ö Bonnx::MatMul_37JÄÚ18Vª"ø„wΩﬂ\?π√£S;sπ8∏˜∑I¬;A„>Qn =‡{±8êtß∏‡”°7â|¯=˙∏K<áˆF?k]ø
+±ë∑’
+πÜyÖøéægyÜ8÷≥π„Ãf∑A∏ü8ë≠5J2πÒﬂ:πÕÓÓ∑lÑ?¡¨:ÉÖ8îæÉ9ïjæÄΩ≥-9π€L¥π¢7–∂ú	π∏»t9Mîøu†É?’9jF‚∏#4∫∏`p?M…ºı5º˘√>ú¥39ÜIZπª≠~Ωè@£ø ¢7Î]9|±v∂™ÊxπZ8+9Ï æ6ºà˘7M9'^9fà^:y£8ôŸx8±“±Ω≈ øp∫∑ÚPÖ∫å?ø∏M«é8zUv:÷Ä>:r;ƒø6C—9≈ê⁄8JP¢>·S?˘=˝ıæøí¨πNc7§I√>.õQ>ˇ˚Ò∏DqM∏‹éπbÏ9}‡Ø8~ˆ´π•pj∏˘~2∏#0>`Iõ:xﬂ8J5©ÆáæI¡DªÃÇãπﬁ©æ’i8Ã(-π;Hò:eÂR>˚E=8Ä7ÿá«7ûPø8LAL=¸·:«ªy>PákæÄM8°H9!»æ¬r|Ω0L8—∆`8Mtæ∏(ñ∏@Gø∏ÑU9≥,πq–œ8&À>“™Úª±hA8ÑﬁÖ9Ù>¯Ω∆ﬂﬂº’Œ”7Å±è:ˆË‡8¨U„∑TF£>„iUæ„íπ>ôKc∑
+mÆ8N‰Ω∏)9µ>9ßi;/—˛;@1">›œ<πbi)9$<πª>ø)¸5π îŸ8ﬁ'%π%Ñ9ƒˇ¶8MS˝7¬ˆÜ8BïÇ9˝!V<¶Ø@∫Æ,o9u»`9}ÉÊº÷ Éæ∏)õ∑›ä◊:=˘%9=u8¶:H8= aF;F3I9ˆKç8\u$9Û>úûß>bÅ£<c|ëΩŸî[π,◊bπ∫`%>pcº=KàMπ∫Ö¥∏=®7zgÁ∏—¿«8Emÿ∏Ú"ú8ìÆπ<I¶=GΩh2≈∑*ö   Bonnx::MatMul_38JÄ Ròâ∏†˘Y∏¯ªV8ÉÈs8Œé˛∏R29‰≥36Ïçπ7æ8ÃêN8£Ì∏≥ú¥∏}&6—≈Ç9Dºà7oöY8∞ F9∏|;7 øö8ÕÂÄ8h®
+∏’ƒß∏*ﬂ”∏Iíñ∏ö 9{Ç9@Ñdπn3[πbÓò∏ú:7ô∏ÒÁ∑j%∏|‹Ñ7Á∑‰∫∏©nç;‘m“ª∑/˘∏ON¿∂¿ãx∫“ÓK;A˜ï:Å≤õ=≥°ô;hæÀ8÷/ô∏´ª"πï£8dv<9÷„r9∆~ó=°<Âªd“Ï:•òf∏8˜∏Ëÿæ84≤z9.Ù´∏X:]"n9«á	ø·p$8Oπ=π¢ïÊ8ıß„97œc∏…]â;=∆§π=B
+∏ò3Á∏±÷®Ω:ë˝∫*–<æ/’>”JªÒπÒŸ≠8[≈K∑∂HÓ8ìèç;ˇß	;ØÅqª©jãªLn;TºN9n¨Ç8[”f9*68ÅÆ∑y<Aπª9¿æ*h49íúÇ8?;πàT8Vf≤∏Ô=∏˜FÜ∑‡\@π4äπ)πt«Ø∑ÚYπgïdπ§–Ω∏’¬93&9m2ß6¡_πé:À∏ˇY’6?¿k∏¸6Ç∏¨‹
+πÔf∏ÔQè∏n+Î7Hö58èπìññπ.ú∑rî∏∏∏)í∏éÇî7†Ñ∏í€È8ê’?∏%$“∏w˝∏õèƒ:ùê,∫Ç*9cñF9C◊Ω–I'ºîPÆ:©ÍŒ;Êú)?îŒÙ7Úb∏åÁ—∏~.ú∏G
+<∏ã>uâ;=/®î;Õw©8ù)*9◊}∏|5‰9∫,"9=oπﬂ—Îº"€:ùôß∑∑ì8ÕJ7πº˚Dπa∆ó∏Ω9Ú˝ì∏®Q~πdÙ0πΩ˝$9cN∏ç.i7ƒ!8∫‚m7ˆ*πÖK;8ïE8®]Ä8	¿Ó8uTÚ8Öo9 ¢Û∏}úä∏2¸:πÑ7Oπ®(ñ7Ú^—9Ê.7Å	9†çA9Çk9õ˘ﬁ∑û ˇ8\7≈8="#9óƒ!∏Ù@º8 K8r5≤≤|π3Ü9%≠∑k∞8’õ¸7é{iπË^πrØyπ>âk∏—^5πäÑ69ev•π•c,9Hê9 û¬8˘ﬂê∂˜æGπ'–:∏∏Ù˚∏ª¶Ø∂k€£8∞πo1πDÃø∑&ÁI8!Uú∏¥^£92êä7â∑å«7o/L9ººK∑%¯˘<Fl/?∫∏‰ä7πÔU'=ö Ç;*û6∫«d?;ßÈ_π“"8Ùï>∏@≤c8:9pmΩÿ2Æ:#		=
+dTª±ïª%RÖ∏[ó9Õ∂∏‰∞/9Öç„∏É:º≈;;BA™∫d÷∏ê„î∏Çå9Ã√Ë8n.$∏i9<∆æS y∫§π™7ñ8kHææ?≠`;K1È∏(\•=·Á9	öe8/“ÜπﬂéL9>@G9ı¯qª§.é:âO<ªï[}>ÕzgΩÔ2S∏@ƒÄ8Èó8:∆<∏ßxR∏„≠¶:8¯=z∆>æ∂ÊF∏]¢Q7T∏øFº∏5∏‘∏ù85=>¨Ù:s3b9h¬F∏€(9=ı"ºΩÊ:Îëå=Ó ù∫Óπâ∫¥πÇ5[ˆø∏ÔzÒπ√ˇ„ª£@m∏8?t(:=º	π€Ÿ˚∑1¬19ﬁÄóπôˆDπEê›ªóÏô>|3zæûππ-*è8@∞πVìHπ∫$∫7?≤Î∏Ì.!∏¯8…¬à9Ã˝9°Â9XO<9¯À38EòS∏Àã
+9ãÅ8îc ∏xäπ’è∏∏-*O9wÔ8îr"8Ûül8%ìL9_ÎK9e¸•∏≠x∏&ªô7Æ∏-≠J9;< 94K∑—ê79z‚æ7 }≠8ô•8»àπ!∏KÕä∑0l^9ÆQ`π≥¯∑c34∏ú{ÉπQ˛Ö6Û≤.∏T
+Ç7;Cò7îÉ±8°Z8¨JÑ∏Œ∏®-˚∏ÙÁ≥8€∑àtGπ⁄5πbπÒˆ†∑∏Œº80π∫8∏^da∏é±ú8hb9á,ƒ8ﬁÕ3π“åÔ8≥ë›7-S\πr®±∏ç7zÄ8òHÙ∏ø4Äπä(7∏±#8#2i6‚˘Ë∏¿9∏7Y%9◊ÔÉ8
+^9`w-5_%û∏DÆ*∏+¡9@±◊8a∏ŸTp∏åÃM∏`‰F∏´∂x9≤Jî8k‚∏LtEπ‘ò:π∂Öcπ/π$Ÿ‰8™¢∏`ÅΩ>Ç≈2∫®9•ïπB¡î>ÅAÉ>”-Å:ÍÊñ=i¬µ∏Ì©8ΩEùπ˝$πﬂ∆¿8z\kπk"ÆΩ	ß:"aFæ_>=‹_9#6π®ÇB9Û∫082ê7ƒ”¢æq"q;($üæ…ÃÆπü«cπu.B8 \49ÊM9Qˇ∑PGî∫¢/#:@-©7ioZπ2e®Ω™èj<∆8˝π^~:øáG+π%=¥∏˙∏ÊJ8>÷â9Á<ªïˆºrÓ√=æ∆•Ω`iæÒJ‡7wÃèπ‘¡πÅ]∑7´˛8ºê•ºÊÖ^?xs$πÕ©87∆99GGÄ8ıßÙ∂3u ∏®£¿∏!ån;^–∫Ìwã∏	6π∞M";z«á;ús˚π@Ô;∫¸•£ªò\πá6∏™~Ñ∂;79Ωõ¢;Ë3‡>——h;∏;◊7º∞.^π2"Îπ¥Æ∆8˜nª∏zu?π˙ê∏Ú8˜;ÔÇØæÖ‡´8ÎÈâ8g84 ∏ ≠∑&9qêü:ØxGª∑Ñ¿4æ-88mgh9pDá:åÓ;°•>˛€å;UVí∏–‰˝∏iò8±ä|π¢ì≤πãòπ ®j8
+krª"â9j"é9B ∏?€9à\»∏®˜f∑LËî;M<úyøÜäπùx;8¯#9™Ä9·˛¿∑ˇ1Ï∂%8M9ÄÑ™9?πÑ∂_5LÎË8Ë.iπüsÓ∏fl9ˆ*9≈§πÃˆ-8å‚^∏y´29.÷ ∂Emπ≈&Ê8—ÁÊ8ÑˇZ8ÑÆ2πo∫Û∏ØE6πÔ…≥8‹5xπ˚P8%jﬂ∑´1Ï∑ﬂÌ6í¡≠πsö
+πÛhÊ7£â∑â£≥7˜‚Ø8Ò∂Ω∏pı†8Ó[?πVàW88â7d†Ø∂\Ì8˚–&∏‹¬9Ëe9%âë9§Ωÿ8Ö"8‡ès9'</π,Ó%8ÜX>8ﬂπô’C9∆êÑπ‡.‰∑ì¯∏V—9=àí¥,Ç¬8ôoã9]Ø8JaJ8¨ﬁP8»úº∏√π˘È·>z∫aU2πc°7∆Ω§æo~ª)˚*:–·π;Û#ﬂ:…Œ9≈@±7‹=f8œÑ%8Äôƒª@bC9æy=L√[æV„Rª„;J7_í:πò√Ñ∑"˜9 !˚8Y|Ó>¯¶>„…1æ4Ç∏ÈQ%9 ≠Ú8ß49otˆ∏PÎ09Õ«æñèç∫˝UgµèÀ6∑ˇQÓΩàæG{gπÎ‰=Ú¸9G?9¶	9ì5Z9m>'8)ëæ8ÁçΩ1 ?ö]<ﬂÄÏΩöŸ8úc˘7–¿û8Fw∏≠b99‘:&=∏´™:ùSâæ†‹√∏ªaû∑ÙyÃ∏≈h√∑Çu†8Ü…Ã6'	79s&√∏ûb+8ïÖπ@∆˘∏√VB7†ıŸ9ï«7´-u97Õ9“!π»äπ Ña9óŒ†π«∫‚∏g"V8"MtπuóA9¥C8a[9ÅvπH/9GB_8Né¢8&hi∏¨∏∑–6’Ø≥∏øn∏,F9aææ∏ÚE9‹~%9YÀF8f5fπÜ ú7<PàπR”@8§úä9/  ∏‚CE8Et9∏Ax8æÇ09÷ŒÆ8Ú3π»îM9V9ç€É∏ %S8≥≠8)Ò?∑ûqi9xóa∏=†∏ï∂πÁ z8ax]9Üòæ∂ı5%∑∂Â9®$Ó∏åsSπ®ÒÙ∏)Å8*]Å8,√∏o¬8:©Ö∏P¡-∂nfF∏<</πLs8%aπÏ—9"Èı∑TLÿ7ÜmπdŒÓ7†:\π3/!π«IÉ∏ﬁEm9∑>9#˝7∑DH<9¸^
+8≤8û≠£∑ù#6_≈†∏AµπP¢{∏=wÜ∏!∏a8	~¨∏‚Oi8∫Ç8ΩmπëÓÑ8êH}9∏ˆ]8A"π+(9ÉÜE∏1äSπ"<9úÄZπVßNπçFΩ8åT√7È:Ö∏˜Ptπ≥<:8bŒ(9	Áπ	L8È6l9¶j)9 e∏úÜç8U]l8-Ë©∑Ä‚Ω∏‰kR7˝∞®8ê◊Ú∏hD~π^29Ñ=9¡ôç8@DR8ìB∑√óF9l—h∏x—
+9Ù|0∏Î+9Æ4π±“%∏nMq9nÂòπ(óÀ74(πÚ&v8ƒ»l∑≤€Ò7p¶°∑fí∏	U◊∂†ñ78ƒx‘∏$ÛL9≈ü8∑J‘Í9ˇ?t8ÓVP∏;7R9kπ]kBπÜó∏ç’ë7Ÿ´©8Ue 8f“·∏òIø6|0Ü9U˙àπıÃ∏oµP8°Nì∏ZhπÇ≥å8ÃQ9B\Ö9ˇÔ ∑„ πqÒ∏6Üœ∏ñ˛»∏Y±9kNÓ8qd˝9`ˇ¶8°\π
+I8ÔÔ8&8g⁄8˝´“8ÚÈ[π≤≤Ö7±M8∂OëKπÙêÿ7Nπdtπ∏5ûA9‘F8#sî9à’97D\á8·¿R9n⁄m9¶X9ûMÄπh∆"8ó¡>∏[É8$∫€7÷$≥8MÅG∏
+ﬁo9‘Q ππZ∆8æC∏TÙ96Œ@π?Oπk‹Bπ@≈6ﬂ¶5πÅÜ∏K˙6°â∏”:Q∏∞ﬁ≥8ƒ≥eπGmi9Ã‘∏¢ÙÄ∏àƒN7hóS8	9H∏Íê∏ô+∏GN∏ZtπIêπ≤L„∏yro8&0π¿5ª∏Tçe7]Î,6$ÔÍ∑√Å∏VeD9ã:9.X*9öµ7b©}∏ç‹‰∏MxπséÖ∂Z‡πl4æ9ß8π—n∏/r¡∏aaÔºXï‡>mËj9 †=∆˚M;óŒ7gÄ7ïπº6ƒ»B7·l>dâØ=„I*ºÇ<VæI±m6R+Œ8π4RπÛ7\€∏$∑æÚπü=ºÆ2æ˚0i8⁄˘l∏oV8ö+Ë8öeπËs8VÀ¶ªè ˙9Ræ§∏â¥ò8«‹’:®\á9·˜¥>∫ÕU:≈ã∫πòq-7FóD8›‰πñÿ®84•V;&5›ªlm»ª
+÷AªÔ”•πe¿ú9{/79îÂy∏†Õ9™2π
+ò;!øª_2<˙–8œ˜û∑ˆ+π<–<9cX9EL•8Å’Æ6s<Ë8÷Nå∏=°∏’ﬁ6πj·8≥'ﬁ8Q8yÙπ,¸’∑9;πûß±8†ø8åOπ•±πy)9<ı–8PÁ9Œ¨7[€9<@∏J7>πRAè8û{ñ∏¯É·7≤∑
+9pX09‚BE∏*ö   Bonnx::MatMul_39JÄ ªî88i9ÌπÇˆ‰∏}Ûî∏Ï'ˆ7+å˚∏	/Sπõ[‹∏(–ÉπıQ(πC?∏s˛¬8e4ú∏qÌz∏∑Œ∂Ã«Jπ5¬
+8j<jπ	Ã°∑BiπsrD2(¢8D´+6◊ài∂nÊÇ92$∑üC9´,8®Ûπu…èπ2›∏πÎ0πÜ›πXº¢6Ï¶†∏‡Y”8»◊8ÇõC8ëßG9E…T8r€"9n¯8˘Í08\ì©8'&Æ∏D”8äóÈ7°9∞eñ∏˙πÖ^¶93,∏§©à8ˇßG∏ùõ85å¶∏Ωï¶8—PD70˚Ú7ƒﬁè9^jE7F.9
+Üf∏˛Eâπ“ÙÓ8î` 8”6π‚Ö$∏ÓoÁ9SF9›õæ8%=8Ç1πYö:f‰Ë8fuZ8ﬁ¿∑˝ Œ∑DûÖ9å¨πD¿:3◊]9Œ°Ø8¶ª0∏æ9ö•Ó∏á=9%∏e^π§—À∑‡ı7˘¨π˚/∏V¿∑ì>I6 g7vKf7˝C∏Œ≤∑®tπΩçd∂‹8¡∏˘”ÿ∏Í]—8p,Ø8¡˛µC]M9·c«∂ #Ù∏©[	π
+ì9a ∑sè8≤⁄=π7	πQ◊∞8e
+πa·π∫^l9≈—6“ñ$πÿDt9‡˜S7«±›8n∏÷8QÓE9òXàππ–óæ‡vâæµtDπ^ç∂:	AæÎ˚Î8˛|–∏Êúx;2kÓ∏¨PU8¶Kø˚:,πtiy8Ätø8~Ï∂øÄ=çC>Ø¨∫X1W9sB`8)-πº :≥Z7‚ﬂ&ªÍŸõ=§…óæB∫[8√∂&89r πG=ı8dà∏ä`=πòS;ÁAº⁄˚ä∏Éâõ∫ÛùÄªPë89ÌÊ 9Ãoa∫*n¶9ob9ñ„=J£∞8"tπî˙≥∏Ÿ!æ∑ä“9*Yﬂ;—v=;;pπ¢ÉI8©9¢òAπa?~9ªº,?’!1º≈ºÜò8v/9∆ππ`û7™7v†90CV9≈£.π]3∆8ò ∑Ã•π†Èã∏˚˛Ò∏gÏl9G~$πÿ0?∏‘N`¥∫æ¥8aπ0ióπ<&)8êDπr¸Â7|ﬂ®9≠3ê9Ù-Ç∏Oå'6àè7tQî7ƒª<πÓ≥m∏ä÷ò8£´∏S(*πº&8ìπ„b8êƒN8]^5∏ä9∞Zg8yÓQ∑>ouπµÕõ8p	o8√A“7hÓß8\¸è8‰É48Ewå∏Ú˙¢πùÜ≥∏ﬁ8¢÷8hÑë8˚Íÿ∏ÿ®Á9pú75 9ì∆∏Ú*≈∏Ê◊58=Üãπ¯.dπ(∑:®9·ø&9‚<P8,!9S~ï∑Û´ø˛¶5ºÄØù83ìè:•àÆªØ=√∏êé7GÚO∏%l›µ,ﬂ≥∏¥@oª”Ã]π´Pπó‘Ä8#ò7≤Geæõ£ªú</Ã%94√∏¡7à‡H8ΩÜ85≠ªun≤=\p[ªpº8…∞s8BÿΩ3áUù∏"B
+∑L≠ˆ80Ûùæ…
+‹ªI∂8c‚®∫ãT”ªlS
+9∞•∑U…ç9±©Dπ2±À8ıñªGµ◊∑©"Î7Ê9⁄˜Œ∏CSuæ'ëB∫r#§∫ıàï89Òòπ›u8í\˛81bÇ8öb$∫?À?ΩEFÊ=ÉˇÇπŸ∑¬98…O8)8\Ê≥8Å∏™ ;#˚lªƒJã8'ÙÜ∏.Ë÷π¿æ8V¯©πx¥ >ﬂE;π:„#9O m:SôÑ7£p9éo•∑Ïé8zΩ;Œs=ª†⁄∑∏p9¸˜+8(«ƒ7æi8‚’∑¢Õÿ∏v. :cù®ªê[U8o-2πãù9Õ$|8±G9Œô9ûòøﬁ
+æ‰ƒ48∫üj∫C˝ÿætâ∏Ÿ¨6i°G;«5Ô7ˆW9dcdª}Ã8\¸î8ªa.∏øØp∏fRæJt >ΩÖ´;⁄œèπ⁄ÿ–8Æ6?π5HπñXˇ84}≤∫≤ÎøáUæÍî#7®∆Ê7º•ù∏ ¥∏Ø˝∏ôˇ˙8ÅE;olûª´∏”F$?„!9ª¥2‹∏ ÌR∏çr2:/€8¥Jπ‘«¬∫© M97I’9MÀñπtπÌ7éâı;ˇuã<˙åm:};Q5µ89ú˜ï8ò_πs<Y∑vHç∫kΩ+◊=SπìÍ9*òQ9\´πô#8rws∏¯b∏Tı9A‘89µÍ8Œ˛∏}ƒ8ÀRâ8§Õ©∏¸€{π°[9Ö π‚k9r•πA@√∑®ÃÇ8ÍÖ∏È{8p§.∏.Ï8XD1πÕ˙8—î684§ª7"Ä&8Ï8=πÍ∂ú∑-¿õ∑ŒH∏∞!e8û$ª∏Ñ*πˆo7gÑπËÈ
+π‚C8,ü4π®]2∑æï%∏øóÑπ◊ôS9 Zô7Êç8!ÊI9WÖ8ı÷∏‘„Ò∏–a79,¯Rπ”Â¢∏[˙√7Îˆ‘∏|{à9lXB∏›^⁄9h”Ø8åkß7»%∑∑πè‰5z{	πmÒò∏
+6Ú8“∞Ã∏K8.è›∂o†z7£º=8µ()∏“Ä=∏è]@8I=9˛<î∑>{`9‹(M9 L8≠N)∑ﬁºo8Õ‡πxMê7ı]£∑5≤≈∏ÿ¢;7ôΩπÖLπ"1+9Ö¸9 ±9˘∆19†9Ï∂«µÄ∏–ßó∏.Lû8{—∏ËN÷πI√∂9©∏%t¿∏:ªOπK≈7◊99t1π}#8°=à∏ò¢!7ÉI@∑é+Z8ùà∑Ìq∏;|8O™Ù8i5π∏Œ9ß´Ä8ÁÍ\9Coò8¯Rà8«ùˇ∏Ô?Å∑T:µ∑0¸]8¶∏ëø
+πÌ Ê∏¨íd9°hÏπ[H0πE˜∫84π¬>óæFi•ª™[Ä9ëëç∫<·pΩ ´∑∏^°∏“f∑hÉÇ9∏ä6$sπ◊∞≤∏ˇD•µI8∏s¶j∏v ƒ9∫ª§Ø∫.J¥6˙Úπgõ∏å&πãz“∑Ï¡öπΩoÙ9^◊◊;Öﬂ“πñπ¸ˇÎ∂°%:9®é∏√%8∏tÕº›≈89œã9 ª˛AŒæ|—+8≤ü6‰÷πB•ˆ∏lVó∏·ãGªì9tÓà8¸AÖ∑≤qπy'à8nƒÇπÖæ∫2∏sµU8ˇ¸π˘{8EQ∏∑’R6ª∑±Ω}º≠8r,πz´Ë8Z+¡∂xπôx§8@?÷∏Yéòæb≠îªÀè7@Z:¨fækFπ[nπ3æÔ7˝È≠9ëÄ9dÏÁ∫Øá¸∑≠«8˚˚9:y±∂‡’NΩå‚ì;w"
+8Pò≥∏-ç…8'ÏÙ8ıæé∏∆Ñ8˘üª?#æ&2§ºiá9`º∏ÊæµÙ§|∏∞17≈i—∏•ºÓ~ªA◊o8göø∏t√º‚
+∫∏¯Ây7i–ÜπHËü8<&98`l{;v}«8T˘◊∏sπ_Bﬁ7‚ñæÍÒò:$3∆;é^ 9Áñ≤6µÌá8Tï*8º/	9ÊÏ9{Œø$º»x7jmÂ∏—;|8<hπTÃù78Sπ_M_Ωö¿Kæ(49í)ÌπÄ"Çæ˝±∏π””8:zMA9ÍıV8.:ßôú∑$’99¥ï∏ﬁœπˆ"◊π?R;R’;’∏9ü⁄∏Rvòπ¨uL8dªÙ∏ìE1πá§F;L›fª∏´∆∂Èà9©´ÿ∑˚%¢∏ï/π<±»∏‘˙û∏Dƒÿ∏“3πÕx˘∏Æ|∏CÇiπE4ß7ˇ„Öπhõ‚7±¿ñ9õ÷ï6ö(;π⁄sπ	Æ8Õxí∏àõ9`´9πa∏0x8uc!9‹ˆπÚG∏¸
+ë∏2¡.9ùº918\9√Åc∑TÇz8ˆ>˘∏Kk'π›té∂—∞∑‚&ø7Ëú8N“å8¢‘πTâ]9U;ü∏e=πÖÕ∑∑úTˆ8$ıEππîë8œu£9´œv∏]÷8±©π*2p8≥=Å8˝“∫8£ì8q	π´-3∑ıG/9åıß8Z˛Ù8Cê8D9WYÙ∏¯Hj∑‡=Î7Qí8ˇ◊E7»#96Ë∏–eï8è÷Ä∏≠'◊9¯ÎS8$Bö∏&w©π
+˘9˜¿ß∏Iz∏éwä∏K±ûπ‚ÆÉ7+Ìçπds'∏·áp7Å 08ßÌ¢7¥˚—8^Ô∏∏m)rπØ£8·x”8y7É8Œ⁄:9©c9∏@À49√Ùπ˘7.∏’Öæ∏ˆ%πã&^∏÷·I9ÙÉ%8à=≥∏¬á∏¢ı{∏‡}%9:®Ä8πÿ.9ñ¥ßπY∆πxä∑‰π∂©Ë5Â/ï∏»<πìÒπÿ	l∑Ú›µx|9rÜH∏¯Wë8”a89}™d∑Îv`∏$œà7)ç÷8ÍXπKƒ∏8ádÛ∏ƒ¥∏ÍNÅ∏ÕÀ∏
+π°0π5=‚∂ˆé9ùn-∏Ô√>∏Ê£0∏±ﬂ∑‹∫8πiÊì8‹∏˛ı5meÑ8qu≠8∑—ƒ6›RDπ%π9Í†πm2πk#πØÍπÿiπLr8Î,ü9òºI7 RG8Ü™ÿ∏jı{∏>–‘∏^4π‚∑wπ"Ù8¿o;5*uæπ™∑{â:Háãæ˚)πvı94˛T∏÷1∏π–¿8√Ø˘:¯hö8;Tù∏ÊﬂÌ∑«G.πú?<fïÑ=úëÇ;f€8”"9ä88»ûô∏s9Oπé¨;πøÖ3æjf˛æt+8»
+∞∏)8‘õ∑∏Îã·∏˜R∂⁄æf‘™;óO	πÁ~‹∫æ¢©æ¿òí7WkR9–ˇπTEU7O5(πÃÅª! ´∑Û∆∫4T89´9•æK=ñ3>æyÙË8“îçπDΩ'92Np7ß8~àò∫äµø©ôΩO£„8nÔVπKi#π|¢j4ÑZl∏¿vπ[ª?^pÉ∫Yû8∏ø©∫∂‹Í>uÇl8a§8¶˝¸∫™N)∏D¨π∂“ó;w¢ı7z‰ƒ∑Ω‚ﬁ8p=Õ9È;c:û¨˙æ:øy>j*9ªøÆ‚õà∑=m:∑«üä∏ó◊‘:∞t&?T_Å=ó∏7å9€›—∏ZK9Æ\†∏X&ππeπwiLπ÷–Ä8òº29ßÊû∏;%8¯ˇº∏’∑8ü≤.9çGÊ∂©¡p81J49ı{7Ìwπ◊&∑*G8ò)Œ∑®SJ∏7h-9
+ß9∑–8Îàπ èÊ8P"Û7ŒÁ6πú3π˚9ûO(πríjπph÷7~º'π&¢Í∏XÊ—∏I’£8b∆ø∏^™ç∑œÌ∏nö‹∂Æ‹∏ºI√∏@†∏bÿl∏’#π8‹€∏‘Ë8Ã˜¢∑˚ôéπ¬ëØ∑˘≠k9x&g∑éFŒ7ê%w∑ïÄà9Wáì∏SŸ∂ıÕ)84∂f8∫ç∑M+8“#…∏Ã==∏I√t8ˆÎ±∏Wu{∏*ö   Bonnx::MatMul_40JÄ ﬁ3≤8ﬂæ:pÄÀ∏Çt?à∞∏≈ò¢ΩM=8ﬂﬂ€πãt|?∏#b9I‹ñæú.°=qºÍ9Gu8ó|◊9”∂∫Á2πsÌÃ∏§L76_»ˆ∏—3ΩA,L9¶òï>÷$∫9tπMÏπ µ9Ni)7ìΩ∏V∑Á∏¸Cî9¸÷:9îCÃ∏>ªd∏ÑRé∏ô«◊:ÿ©π#¥?∫édZ9F†π 7A;∂µê∏˙íïΩ>€ê:®œ69…WπÿÉ9x≈E9yöC8´eè∏VÖ∑pYóπ√fÒ∏Ú˝⁄8 X—æ?l6˘#∏ºJÙ8*(Ã8õ
+Ä8òd≈∏g’7“o’7åÌ[8π1Ü6πÊ%oπ˙OÅ8ãW*9h"π=˝9(π8XÛı8à»B∏r“79uDíπê€Å7∫/0∏à`#8‰æπ¸078çi∏7_9>êS8Pˇ√∏uØ5∏ﬁ∏lë0∏M¿∑R.K8J—º7˜?Ü∏IËâ7ì∫7Çı92jŒ∑&”!9Î ≤∏T©éªúº∏@ÄÈ<29únπ8Ï  ;D8Wü=∆nÁ:Wì˝∏Ê$∏Ÿ¸;∏ïËD7^bË8H¬Cπ¯ÖL9€¬)π€4ö>Ü
+π¬°'<	 %9ù;Ò∏Î\π∫PÇπ«z–∏éÜä7p8ºπÅ·≥∏8[â9Ÿ7Ôç∑ùÑ#;*‹Å∏a§`∫ñõ∏Æ«9G3æÓnπM®»ª#l·=˛∞3∏ﬁ—[∏†r=π#±∆∏∫!∏ezÅπ1üí≠÷[é∑!‚ä?¡π
+π99àºÕ[π±◊◊8?∫›πÃˆπE°ÔπûG∏…€‡∏êgE7◊Kˆ8π;89TK§8\Jé∏Œûê7d+π!eπæûß8![π_CN8<∏ø8∫CL∏§Û«∑‰„8‘]πà–&π∆ˇ
+π\oÖ8dó∑'∏x9˙˝…∑¨¶gπ$ç.8ö«9Î(9Ñ9T±∏è<^8çgëπ—Ÿ8È¸¿8ór8yêfπˇ¿√7±Ç’∑Æ|$πÎ∆h∏ïd9”|πœÛ%9îk`4ß–9ÜÄ∏8b-H∏Uù7"„˜8}R/9Ë˛∂.Ä€7˝¨Ò8—C76ÒâπÚF£∏]É‚9ó(°∏t∂∑ßÕ7ç÷`∑{πœ’áπ…¶ 9πxr8u~î∏Ã±nπÓ9∞ _7T±â∑F#9Äãe7`rÆ>°®ß∏·oÅ8É'w:ª€>∏‘rq∫ÚPÿ:Dj(∏:™ı6ΩÜ∏èní9§è£8=+e9@U[8¨î∏8¯ã|8ƒ5˚∏‰'ñ;û”µ§f7∫:Ú8Ë.M7A∑ê^π3∂8H@1∏ 49±ÖÌπˇ∏*§¢∏\g÷8öá6y@l∑±™‰9πﬂ∑¢,@∏]GT6ÁŒ˘∑DŸö8è¥]π›D,9@∑8¯†ç8ä‘9¢Ì8©P9T8>µZxô∏§}q9Ò∂x8
+^8LÓü9X+¬∏V58^à∏¯›ñ∏`˘∏b¡8◊∫µ∞l@πÃÇ£8j+πÿÒ∏˜X÷∏ˆ1&9˙i∏˝Pe∑À°9ÒÜπR¨π}@=9Øº∏`Û~∏º~»π¨õ≠6ˆµÙ∏èÈπÒ;9Wg.π@'9}–πƒUπü8YÑ95—∏Tet∏Ú”≈8òaÕ∏{ÜÏ7¯Ú8…ï87h∑∏¯ª»∏\,∏å,ã;„,äπÂVµ∫Á‚7ºbî∏®y(>ÆÕCπ2óæJ7ﬁº∑Ãë8bÑ¶7whò∂&Àq9ÑX9QT9@™A9Öè#πx?;9/}PπˆïôΩ0¥Û6ûá∂ œ8µπç3h∏ÕŒ‚6Ò eπùfÿ7Rπ-7æπíô˜8º9R9c8:0πîNR8yòf8{ØxπH[8^QÚ∏p—∏ä˙ìπkìö8]∫8„û≠7/Ï∂9’¡π∏ç÷B∑ñ™m9©”7$7,>Kπí˝ï9j@∏Ò|ì7é’∏÷Ô∏ld∑AËú9y~a7Éª‚πm∑∏™SM9∂ø:π†πlÍïπœagπ˘‡f9Còπ”˛8,O∏©òπõ∏=}C7Om≥πE˛9,Õ6T√ 8Ÿ˘∑*ö¡9P˝Àπfm©7•πΩ£9 V9?f¥9x9ﬂ8î∞8+ˇ8Ûz8¯"Ú∏Ñ≥E9‹zFπ3‘8|Ínπ⁄˚(π{TWπ¡wπ™JΩ∏®‡V9Ú^ô∏É5∏;⁄á8ïS≥∑À›ÿ8
+◊xπ<3∏·8`q\πñys∑ºKr9ŒÑπ9®’3πQ,Ÿπs#ù9Kì8áπ=9—§9â8∏ñf8ÒòÎ∏î2ã∂V\Ω9oß9+3®πA 9:î$9>u9°F8m∫∏„S9hO∞8E°≠8ìR˛∏˘\ó8Ö;∏ô ∆8:Ò8πépπJwÅ∑ú`X∏`Ck8ƒ$vπ]§ﬁ∏sú9˚ºí7ì4\9^áõ9&Xπ««s8~4π˝^–5™Ïà8	îò8L.Bπò‹z777Z∏z‰Ò6y*@9–ÉπZ0ë;RLã9ßù∫®·Õ∑O$9T•
+ªØ:˜π<M¥º;~ì=M∫-π´ñ∂“0c∑`Ç–8ùŸ?πF9∑o9x,∫∏KZﬁª3 H8—>∑∞#9ÌcπcµŒ∏ÕŸ¨8™ÒVπ!¿%9D©∏#˜Ê7RÑåπv©5π◊£8Ü„æ9ÂZ]∫°§n∏wy'ºÎ∆∏)´˜∏‰1]ºfñx6‹wæ%ö.æ5ß9yç?9ÌÕ∑uTvπÑDµ∏X—8∏!“∏k≥ë∏)År;ëAÜ8"ÂàæQJhπ6Kù∂ “8%˛A∏ ZXπZç∆8â˝˜8pÄÅ∏éK8‘áŒ8|Ë9£ªà9qhå:©§ë∂!ÊlΩ4Cπ0,)9‘òu<ºè´∏‰±πOâŸæ√X7àMŸ∑ˇı´9nw“∏°¬P96™29ÿûÅ∏¡3:8≤º8;Ü.ó∏Ωa´ª≤…9ïv¿∏jµ|∏ÚY€8‘A‡πs¶ ∏%i›5≤∆ñ∏„Å9≥Ô>9¸0€8kƒ;9,â¡∑€Œç8®Ωä∏‚Ì‰π+≥8m®∏?•é7X≈95Œ∏ÖÄã9«c9≠≈ÖπŒ¬∏ø.πá∂òπJ‡"π«F9ÁM;9#a9„@z8YÄ”84Ô∏·8πò‰‰7aáø∏¢§›∏Î˘öπﬁkd9ìµ"πÌv95¸›8_+§9G2cπå{7H©,9Ã‡∑™ÄπÌ7Sπo27+_8°)ˆ∏÷R[9 °}πÏ9∏Ó`≈9ÍV 9™ﬁ8qûπ0†8'.29"`ó8wm99p9|ÒÒ∏>› 9*òÖ∏b#∏ôsﬂ∑Qù÷8/&9∂ƒπ(˜9xñ08û5∏»8∞∂t∂§î&,S[¬8Wöπr)õ9MVB9≈bÍ∑ë,9~i∏:M¶∑ÿÃZ∏*U†∏;xƒ9º∏uπÖ>≤πÍ2a∑·®”πµG9È]ø9¥™Aπ8”\9ñZiπ∂x8π¯$π)Âπë–Sπ∏>à8«Êˆ6DÖÑπsP‹π|ú⁄∏„RtπΩZ´∏µ9∂Á£∑,x¢7Û·π˜¬Ë7“˜e8AD9Ø∑±∏ŒèÁ∏\`Rπ¡!Û9»ò#9<É7÷c 9¿˚∞9∫-!πaƒû9wg9e9L+¶9%9ô˝®π-ß∏O1¯πPÔ-∏9}>πòö<∏õ7Ó∏è-±95¨∏^¶î∏®$∂∏pD#π‡àñ9òäq8ªo˙πÍ738È)π«ã 8"ñ.9xØÜ∏1!98`öπ_*"8ÊU∏7ALû81€∏]gÅ9Æ±π:d™∏†Ò∏bE‰8é–8·•8™·πÜ9⁄–Ñπﬂ*9∆• :ô‰8±ó=π‚Ò⁄8“c¢>ú!2∑E6Z∫«t9Sª ∑ ùâ=Ó¶∏ÒäΩﬁIá7“Àà5]T8Ò“µ8ç√ç∏^© ∑VìπLKÉ∏T4*9hÌ∫ﬁ∂9@Õ;I÷∏q‚=πõÄ`πKÁú∏rG?πdjÊ∂ãÎ'9œ Æ∂PcØπ	YF7/Ì¨π5€Ê∑µµ ø=·ú8Ü
+NΩwJ¸πøUL∏**≤æ∆˙.∏ b?eç=T»∏∏¡«òµV¥≥∑y2∏–P7¬8πDKÉ∏á≤∑ˆ °Ω“°¬∏Õ˙~>ªÔ>9<úç9QäT∑ˇ
+ı∂!@~8U∏∑÷∏ö%Ì∏*;'∏UﬁÚ8¯ôëπz¢ï∑îö6πÆGπÎÉz∫zòh9ÎÈÔ9ﬁ,9Ωı&8˝rª?JéªŒ{\9°‰∏·ﬂ9ö¬UπÈè9éòW9Ï\8õêπ† ƒ∫}!Ö∏πIø‹ß9ùUB∏Ùë9ùp9’˚T8ß©=8 OHπî√=9ù›7ç‹9πXLæ8ƒ?D8IEè∏±0¢Ó€8v@>πY6πˇ©9Túå9≠l∑¸˛-π@ˇ8H|π @ü∏™É8Ü	*8¬î∑Ëæ∏o•∂83¶Ÿ∏ˇ8å8w¢ 6]åü9ˆ`ò8Ã[m9Ã{á9AT}∂Ût49 iÔ∑ÂΩ∏‘H∏6‹<9poQ9‚≤∏˝ÿ∏ï;î8KÓñ∏ï°û991“∏›L9Ô0èƒ∏ù?π%H©πW9!à8–Ω∏*sG8√^»∏ZHπ=:∏X&πd`í∏æµ£‡ã8áåB8¢ˆ8RÛp∏>Â£π{n«∑ËE9xı9®X<9I7¬8Œtù7≤·˙∏rÄ∏}Ïè∏¯oÊ7–’–6(8q∏]zÃ8v’7πIî8vÔ,πóq∂nE∏z49äŒÛ8ûúS∏ßBπB†∏Áœ7Õq¶8|d|9Xõπ SÄ9ØÈ”∏Lu∏„Vπ#Â8‚a 7úi∏Ÿ¶∏à L9÷ûFπ≥7ı˜/π#ÏÁ∑÷7·‘8‡S7@∫9ªÎ”8g∆áπ—¸›∏õ›µ∏¡ π8Lq8˛=q9ëãªπ)Hî∏ıß’∏ù"πi‚∏ïb<9Â˚OπÙë8^>˘8Pgµ∏eó0π6ÍCπA{¡∏k∑9‹T:9`C8Ü	·∂Íï¡∏ π. ò∏$›3π“47Gƒß9÷ø$∑ ‡8çXp∏h•9Ëøb∏Oæ3π_ïÓ∏ytË∑_8Â∑eY9Ü≥!∏G£#9Õﬂ7"∫πÑiº8ùryπË°î8`¢3π√Zƒ∏Ω˚8≥
+Ò8ÏÒı∑	dn∏
+⁄8}ˆ§7âˇ¿7Ï9jb»8êì¿πzÛ4πRY–π ΩÆ8	Ç :û†Åπ~»6π~Å=πƒ‡8µlùπÄ‹9«ê8Ë∏.¨π>À8∞π3Tr∂ZÅAπﬁ–π˝˜´9ﬂûÖπ~óπÃ?í7°`∏≤ü´∏˝WqπF‚∏◊¿¶7yı9Y	gπ*ö   Bonnx::MatMul_41JÄ ®Ωú∏î‡S9ÁÎﬁ9Ùª:ππ€o9N}πF¥E9'™(6¢ﬁa9≈N9ßÔH8èπ`
+õ8ˇkÉ∑C)a9^â8µ§é∑4+h9îôzπˇDπ-ùó8óˇÉπgÃÚ9“Ç0πb⁄8—ˇ4ZÎcµ“8rπ\Sº∑ÍÏ9ÁU7Põ!8≤IíπV˛∑|ì73¬z∏k_9ÁëÓ∏úpJ9…û)πíL8ÿfÊπè¨áπ»{8»Gﬁ8 ∞08òl{∏âÿÒ8$X@∑“„	4Íq[9Ó&ÄπÒ¥à7A8E9Iq∞9ìÀ7ÂFÁ8i¶ﬁ8¥UπZœ8|
+(8Wê∑ÛòΩ8≠q59/ı"∏Ñ'…8ıﬁÂ∑ÿÙ9∆0@πV%Í8l;‡8yìπ´“k8nî9°¢É8ÃÒ∂<πo∏ˇnIπQ∫}∏≈“‰∏g›8H/π,gπ∆‰Sπ>	9Áª68'ÄmπY∞p9©¯G∏6u‡8∞3$7+√D9íVˇ∏eKË8åÀª8FŒÜ∂
+ø9ñÛÙ8˛œ‡π-ˇµ∑∑Òå9JrπW.A8,Õê8%ãßπHs∏‹äπ2öπ‡b9WGs8¥Õ•8tdU>∏âøÅWπ0á%8‘ƒ√∏'K¢∏ãÊ∏àj9ÍØ¸8¡Q¡7¥|9ß¸¿∏jAôπ‘˛óπk˘∏)âtπ?•K∏)’8£#,9 çπl96˙KÙ7Ÿ°∏Iπ,j8I„9}◊Ω∏ÀeË7=$:UUT9˜XÆ8˝,Û∏l}|9vƒ>π]x∏ƒ©Q7I¸∏´Í∑€è8˝Q∏*'—π(oÜ1Ø,…πÔç7eÚ∏•JX∏Í„‡5lÜ˛7zK9s—>π6ı6πìW?lhû∏"D9uY•7Øi`πp«89ßâ«∏◊˛∫∑p59éˇ+∏Oë∏ˆ∑<π76 ∫ºw¢:%RR9´l8˜	πå2A9/V9¸/>8é’É9w!π¿'f∏5ï©8t∑∏Ò]’∏äÖ9êrFπÉÈ9¥ÄI∏‹Ω9§\?9Wm8!Ù@9µ	#9?§9ıÍ∏∆®7æ"πÌ6	π›ÿË9ﬁG¨∏jjÿ∂^F8ò)π{9˘ä˘∏V…/∏ÍR9°q8æúîπo~E9“+“∏=¬≤πO=9jì8ÕÔ∂ÄF¥8wõπûï7Øëë∏ºt¡8‰öÃ∏ù"l9»á≤8F¡h∑¶…®∑HÔ∂S›∑∑lpπ©Ìà9¥óﬁ∏á∫á9F 9Ä,π®¶8—W<9çHØπ‘â;9©æÉπm∑8A/ù8Í∂‚∏6Oè9sM«2{∏à¡3πaﬁ1∏’m-π<6"9´ü"∏n-;9M8π&ó 9ıˆ9ìÇãºÈπLê√∏<≥Ç∏Ç>Z8H‘πeNê9Fv∏!k∑8ÆÎZ9∆–9£ot∂ƒoÊ∏FA+>;∏Yøp9h(9¸⁄πÓΩ¡8`⁄9Ω˝(∑Z{ª∏$ñY9#%9öá8 kÖ∏§Æ∏È≤ó∏v¡5π<fz∫˙ë9?Ø∑ÉB#πb∏è∑Iq>πY))9
+/?9…BπTO–πwù8à"8”'πsê 8.èì∑hºπºª π≈ébπ›ö2∏^GV9Pµ°∏'êπˇÁÖπƒÁ∂πGπ®∑œ∑∑≤˘∏¢∆†∏ÒZ9øq·∏Ó]Û87ÇπTño9[%π'u∑8J":‰%œ6¨Íû∏úˆ	π„-$8ıC80Ùw8ÌäKπÅ@	πëò≠∂ú~¥8lÀ°8X‰7/©äø⁄≠9∂n˚∏˚Ú€∑0e	∑Î`8F†7§RBπrhí7ÒCï8i˝4πÍ, 7hF9¿x7√π⁄´8q∆àπxa}9∞LÕ∏˝P?0s∆8øBÖ9N1∆∂Ÿ6t_¨8ñ…ä9–tπ‰ä7π¬Àïπ∑F8a’zπQ“Ø6~∂y;øƒªÇ7øK8,í9il∏˚yLπÖæ∑‘∏˚∏SÆ8›ÛÍ7ÿyπ+fD∏JIW9q8—8ö88ÿÄä:8_>9Ì%∏\•π`‡∏†Ô∏îöO9;¢πŒD9Dµr8@¬>∑Œdå∏t(!∑˘íj∂O@7ﬂ∑+¡ı∏XT¢8 5 πÉ8œïπ;$î9L—πÅî∫8”ÈJπ§X»8cCC∏M∑∏·8πÿf<∑¸Ôåπˆ-ë∏å*©8˝M∫∏Ä´=∑ÛÏÊ∏0Dt∏0yOπµów8√ÆÑ∏¬r?8ˆ≤¯∏_hã8t4;9ã π:éÕ∏Xå93õú8≠Uø∏¯˝h∏πI∑åÍ(∏ﬁÏ†πù]M9Ú»å7 1æ8‹ì∑Iqª∏Ûêgπï,A9-§8‡ıÂ∏BuØ7Ld∂…GÚ4pÿı8Ï»¬8Øá®7ÎC∂dÈáπ$X9á‹õµQ—¶9	ö*9ã™∞9ÿ]\8Ê ‹8ö	Nπo1ë7g+∫πM?Ï∏$g89¥Ê85T8lÔ 9ë˘›7{õ"πû6π≠ ƒ7á^π«≠EπÎÜëπgÇ∏ãêòπ\|Ü∏û6π0öâπÏè2π=ö∑∑˙,ì7Oº39Buh8S πz…8Â
+#∏·ıÄ9+¸ô9°Y9‡Üπæ≠û7ƒ¡∏ÛZ8‹’π]-8xBOπˇ˚Å∏üi∏Z•,∏{jÜ7Nù∂`°n∏‘„Ò∏:QÎ∏õ∏F7µ∏–ÌJ8∑Â∑	D9Œloπ)õ∂Ù÷è8§∆·7˜∏√"ÜπfÏ»7kTπ6†9EFπ6∏è∑QèO∑ØØπ(Ωà∑Úk9Zí∂8—…ä∏}494)<8øÇ9Ï¶π.Uù6é+9…vÒ∏Yßb7	I9˙◊˛∏)±≥7Ç))πærz∂_ÖíπNN∏°¶Ó8Èì9P*9„õ¡∏æ/Å8J∑‘8“Á8ıπË*6äç9*ùXπΩ‚É84x∞7Éò8ú08ÃN•7‹/e8ñD†πj…z95˘á∏$”∂¡:˘8œì7Å…{∏¨Å\∏%8+9¡£∏$‹∂>û∏åÖ¶8ÊI9°’π«xπÁ®L6≠4˘6πÙ)9-%8«ìπ˜ÜÑ∑"â¥∏¯‡∂ÎÉ9—P[9j∂œúùπ£Ñ9em8
+⁄∏8˘Ö60|=π‰_!9ñò∏G’9èo3∑O˛8?π6Fπ#Ò8Ä‰:7•ÔπÓ˙ó8›‰1πöåﬂ6∑è9$≈î∏"≤8Zoπ»˜9o˛≈7⁄C9©c∑±àπï{πõ$—7akÉπ≥Øa9⁄+∏tù-8Ës∏^’Ö∏çºîπñˆ+80s≠8“}ã8Î7Üπ˘LØ8WÖñ7 ;Û7ÌHÉ7ﬂV:9ê›∑<23∑ê’®∏ÊÑ8üˇX∑:_Ì8›í‡7°çÄ8*CΩ|Ã,π*°ù8÷9π7e9Ú≤†9zÂ¨8
+ó8·ê∞8ØMØπa¯õ∏øû8Êœ9É`Y;®£H:7”0πõ9–%∂8∏)9¡VR9.9Í8y,πL§	∏T:h∏-˝›8Ö∏c∆qπ(ÁÙ∑üπ3¿2ø2»˜∏Òj∂˙‰7ÊØÊ∏ˆ`9æπcr98´r9‹|7–õN∏ﬁX—8¸ì19LÁS8ãﬁ9ÜTπp (∏$∑ò÷8â7Ω8Ñ•§∏èì÷∏HdJ∑ø≤9vÖ09"‰Ç∑’"’∏K∂\N8ÙZ}8‚FÉπ°#9íMÉ9ôZÍ∏kû¥9ß“Ω-lÆ8pë”∏‰ßu9‘Â·8N≈≤8Œ"*9läÙ∑“˜∑^!”∏ö7√VS9Ù%π¨OÓ;di:=Î§S7Øp9{õ¯∏∂4∂§ 9a^£84…Ç∏6?â∏MÜ9(‹‚∏‚`9ø∂t8”∏Nfìπ)ü?ªí5∑•X28¬{&π˛94Tπå4æ8&$±7ü¶.πÌò≠899w9âP±8ùr∂8Æß83˘>9é‡5πKôe7„6ƒ∑ Z9<•º9Mä8íµ39ò–9Ωåk8iRé7O>q9W›Ôπêú8*£8´˚π≤	J∑œú_7>∏é»Î8ﬁ\v9D4π•c±6RÂ	8¡ ™∏7R58||±∏Ë„∂80Rç∏7Ü9C8	¿/∑0∞8Ÿ˝g9øYπ«K8ùBπ`è,∏ﬁÇπ'
+9$E<9≠]S8Ö˚"∏Ôº‡∂/`∂C(?∏¬,{π≈Ú)7ˇÊ9˜™·9¨ø‹7π(T∏Ó±≈∏89ôd!∑Ø9í8'79L˚§7º29-h8@U7Ìì∏wﬁÔ∑Qc)π:Vÿ9Ê|(πÅﬁ9òË∂∏0+97^#ä∏ÆÚπ«®Øì»'9|Ó9ÙñBπó…πÛÃ"∫¨";πÖ˚Ü8ÀØá9˙∑ˆ—TπÄ ÷∏°ˆ·8JU9Ù©∏t.™∑ LÃ88`Ÿ∏s∏ã8K˘8√s∏I%9gF∏4„≤∑Ñ-§∏gÆ'9¢N9OcπŒ.P9>Â95îπw9ﬁ≥5πΩ™∏¡!O∏ë>y8ªäë8òì%9[y9-˚"∏P}8ƒö€∏›ˆ	9	ª
+7É†æµ«1ˇ∏à9SπQ7Lô2∏øâÈ∏c´∂7ùù
+8/'π‡£∏Únì∏Ÿ(%9‰Ï9b(9a≥RπèÅc8ƒ¶N9–”ëπEa‡8ë™⁄∂Ø˚x∏/Ò?9€Á°∏èÆ∏TnX∏-rî∏&O87U5Ã8=Ô8π<∏»Ï~8à “8±œ|8˙–∏˝/oµˇ9\Ä+∏O8®∏Â„|∑5ø8«Ès7éEîπ_≈TπU	ã∏ï.9πó∏3™Ñ9©Ç9t»Î8ÿd-πÙﬂº∏z◊68¨ùÛ∏Ù÷æ∏¬8®†"πÂØÅπ~öUπ48ƒfcπ"å;9ôÃ=9eâuπòµ-π"ï8KˇΩ9£eá9¿πﬁ8Â÷Â∏˝ 09h;D8ΩÜñ9ªΩÍ75ıπﬂﬂ˙∏`ïÓ∏´Éπ7˜≈7¸§*8‡·9ôÕá∑Ó9Óﬁå8vﬁG9;r99Ø6πÙCC9~8¬¨∑@·Ω9_k7≠≈√7%y8¨πÛ®=9œ9"∂ƒ∏Öçé∏˙-8&¶h∏˛≥`∏eYk8ñbπ‰?¨8Å|π6◊Fx9;Ô8+0∑È∏®º0∑π¡√‰∑Ø(°8äJM9w8”≈0πñJÌ∏3¬¥9Zt9jt∑∑¶$ôπÅSÄµcá/7ü˘7˘79`≈Á∑L‚◊∏Gö˚8^[óπA‹á84%πÜè∏àv+∑ £iπÊ¢‘µZô≥∏Kl∏uœ9ÇUØ7yõ…∏Àj⁄∑<⁄gπ®Ãπáç¶∏XJz8 ˚É∏òπï~y9]ÈÔ8¥U8áœ‚π√Ì8–:U∑üj¸∏ﬂXµπD≈ª8yÇπÇ!ì∏D“π*ö Bonnx::MatMul_42JÄ,tJ∏öZ∏YBÒ∏ã¢∏Ωö#8å⁄7Õ±~∫µ/è9Ô©?¬æC∏í›Äπü!◊∏#?y∏Ö92M9I9˛´8;Íæ∑\§∑Ù≥§9“‹⁄∏°jÖ∏Y¯!∏¡:÷8f∞7¯ñp∏¥“w9K-π0ﬂ8œ˝π6ë'π≥∏⁄·99¸–∏TOgπgŒï9˝!7ƒπ9È&∑ç∑lπQ”Ã∏ê`8∂Úœ∑b˛8tf;®y?Ÿö∏ ¥µ:£Åø–í¢:–Dû9ng7˝é8^ëñ∑⁄[π-ö‚π?†π≥BÛ8La#5	Õ∏F8NÄò8!J70m9ÛF„8ä⁄ñ6“∞∏œßL9S"8SM0∏$â9=Õ≈∏ålKπAŸR6∞UÍ8dﬁÅπûFF8ç¢™7‘Óé∑^fπ„+^9TñmπzM≠8çŸg9w¯¨∂.W…∑±TÈ6XÁˇ8cöˆ∏è'I∏Ï˝·6˜bR8ÙE∞øÇÈºª§	ªZ
+onnx::Cast_0
+
+
+b
+36
+
+
+B

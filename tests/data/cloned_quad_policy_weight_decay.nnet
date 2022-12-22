@@ -1,0 +1,4 @@
+// Neural Network File Format by Kyle Julian, Stanford 2016
+6,32,3,32,
+32,32,32,32,32,32,3,
+0,
