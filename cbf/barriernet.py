@@ -181,7 +181,7 @@ class BarrierNet(torch.nn.Module):
                 # Forward pass: predict the control input
                 # iterate through the batch
                 u_predicted = torch.zeros((batch_size, self.n_control_dims))
-                for j in range(batch_size):
+                for j in range(len(x_batch)):
                     if self.preprocess_input_fn is not None:
                         x_in = self.preprocess_input_fn(x_batch[j, :])
                     else:

@@ -174,9 +174,15 @@ def construct_cbf(parameters: torch.Tensor, x, x_obstacle, x_goal):
 
 def clone_dubins_barrier_preferences(train=True):
     # Define Barrier Function
+    # Define device
+    if torch.cuda.is_available():
+        device = torch.device("cuda:0")
+    else:
+        device = torch.device("cpu")
+
     barrier_fn = define_cbf_filter()
-    x_obstacle = torch.tensor(center)
-    x_goal = torch.tensor([0.0, 0.0, 0.5, 0.0])
+    x_obstacle = torch.tensor(center).to(device)
+    x_goal = torch.tensor([0.0, 0.0, 0.5, 0.0]).to(device)
     barrier_policy_fn = lambda x, p: barrier_fn(*construct_cbf(p, x, x_obstacle, x_goal))[0]
     # -------------------------------------------
     # Clone the MPC policy
