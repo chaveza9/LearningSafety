@@ -16,9 +16,10 @@ class BarrierNet(torch.nn.Module):
         hidden_layer_width: int,
         n_state_dims: int,
         n_control_dims: int,
+        n_input_dims: int,
         n_output_dims: int,
         state_space: List[Tuple[float, float]],
-        barrier_net_fn: CvxpyLayer.torch.cvxpylayer.CvxpyLayer,
+        barrier_net_fn: CvxpyLayer,
         preprocess_input_fn: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
         load_from_file: Optional[str] = None,
     ):
@@ -30,6 +31,8 @@ class BarrierNet(torch.nn.Module):
             hidden_layer_width: how many neurons per hidden layer
             n_state_dims: how many input state dimensions
             n_control_dims: how many output control dimensions
+            n_input_dims: how many input dimensions to the barrier net
+            n_output_dims: how many output dimensions to the barrier net
             state_space: a list of lower and upper bounds for each state dimension
             barrier_net_fn: a cvxpylayer function that takes in the state and penalty parameters and returns the control
             preprocess_input_fn: a function that takes in the state and returns the state to be fed into the policy network
@@ -48,6 +51,7 @@ class BarrierNet(torch.nn.Module):
             self.n_state_dims = saved_data["n_state_dims"]
             self.n_control_dims = saved_data["n_control_dims"]
             self.state_space = saved_data["state_space"]
+            self.n_input_dims = saved_data["n_input_dims"]
             self.n_output_dims = saved_data["n_output_dims"]
             self.barrier_net_fn = saved_data["barrier_net_fn"]
             self.preprocess_input_fn = saved_data["preprocess_input_fn"]
@@ -57,6 +61,7 @@ class BarrierNet(torch.nn.Module):
             self.n_state_dims = n_state_dims
             self.n_control_dims = n_control_dims
             self.state_space = state_space
+            self.n_input_dims = n_input_dims
             self.n_output_dims = n_output_dims
             self.barrier_net_fn = barrier_net_fn
             self.preprocess_input_fn = preprocess_input_fn
@@ -64,7 +69,7 @@ class BarrierNet(torch.nn.Module):
         # Construct the policy network
         self.policy_layers: OrderedDict[str, nn.Module] = OrderedDict()
         self.policy_layers["input_linear"] = nn.Linear(
-            n_state_dims,
+            self.n_input_dims,
             self.hidden_layer_width,
         )
         self.policy_layers["input_activation"] = nn.ReLU()
@@ -95,8 +100,8 @@ class BarrierNet(torch.nn.Module):
         # pass state through policy network
         if self.preprocess_input_fn is not None:
             x = self.preprocess_input_fn(x)
-        penalty_params = self.policy_nn(x.to(self.device))
-        return torch.cat(self.barrier_net_fn(x.to(self.device), penalty_params))
+        penalty_params = self.policy_nn(x.to(self.device)).relu() # relu to ensure positive penalty parameters
+        return self.barrier_net_fn(x.to(self.device), penalty_params)
 
     def eval_np(self, x: np.ndarray):
         if self.preprocess_input_fn is not None:
@@ -177,7 +182,11 @@ class BarrierNet(torch.nn.Module):
                 # iterate through the batch
                 u_predicted = torch.zeros((batch_size, self.n_control_dims))
                 for j in range(batch_size):
-                    u_predicted[j, :] = self(x_batch[j, :])
+                    if self.preprocess_input_fn is not None:
+                        x_in = self.preprocess_input_fn(x_batch[j, :])
+                    else:
+                        x_in = x_batch[j, :]
+                    u_predicted[j, :] = self(x_in)
 
                 # Compute the loss and backpropagate
                 loss = mse_loss_fn(u_predicted, u_expert_batch)

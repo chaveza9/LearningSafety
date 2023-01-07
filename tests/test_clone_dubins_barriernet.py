@@ -8,7 +8,6 @@ import sys
 import os
 import cvxpy as cp
 
-
 sys.path.append(os.path.abspath('..'))
 
 from NNet.converters.onnx2nnet import onnx2nnet
@@ -45,6 +44,7 @@ state_space = [
     (-np.pi, np.pi),
 ]
 
+
 def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
     """Run a test of obstacle avoidance MPC with a dubins car and return the results"""
     # -------------------------------------------
@@ -56,7 +56,7 @@ def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
     # Define costs
     x_goal = np.array([0.0, 0.0, 0.5, 0.0])
     running_cost_fn = lambda x, u: lqr_running_cost(
-        x, u, x_goal, dt * np.diag([1.0, 1.0, 0.0]), 0 * np.eye(2)
+        x, u, x_goal, dt * np.diag([1.0, 1.0, 0.1, 0.0]), 0.05 * np.eye(2)
     )
     terminal_cost_fn = lambda x: squared_error_terminal_cost(x, x_goal)
 
@@ -108,58 +108,76 @@ def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
 
     return mpc_expert
 
+
 def define_cbf_filter():
     """ Define a differentiable barrier function for the dubins car """
     # Define the barrier function
-    u = cp.Variable(n_controls) # control input (velocity, steering angle) [m/s, rad]
-    # Define State Parameters
-    x_obstacle = cp.Parameter(2) # Obstacle position (x, y) in the world frame [m]
-    x_goal = cp.Parameter(n_states) # Goal state (x, y, v, theta) [m, m, m/s, rad]
-    x = cp.Parameter(n_states+1) # Current state, augmented with sin and cos of theta (x, y, v , sin(theta), cos(theta))
-                                # [m, m, m/s, rad]
-    # Define slack variables
-    delta = cp.Variable(2) # slack variable for the barrier function
+    u = cp.Variable(n_controls)  # control input (velocity, steering angle) [m/s, rad]
     # Define CBF Parameters
-    R_vals = cp.Parameter(n_controls) # Diagonal matrix of the control cost
-    R =  cp.diag(R_vals) # Control cost matrix
-    p = cp.Parameter(n_penalty_params) # Penalty parameters
-    # Define CBF functions
-    LgLfb = cp.hstack([-2*(x[0]-x_obstacle[0])*x[2]*x[3]+2*(x[1]-x_obstacle[1])*x[2]*x[4],
-             2*(x[0]-x_obstacle[0])*x[4]+2*(x[1]-x_obstacle[1])*x[3]])
-    Lf2b = 2*cp.square(x[2])
-    Lfb = 2*(x[0]-x_obstacle[0])*x[2]*x[4]+2*(x[1]-x_obstacle[1])*x[2]*x[3]
-    b = cp.sum_squares(x[0:2]-x_obstacle)+radius**2
-    # Declare CBF constraint
-    cbf_constraint = -LgLfb@u <= Lf2b + (p[0]+p[1])*Lfb+p[1]*p[0]*b
-    # Define CBF objective
-    cbf_objective = cp.quad_form(u, R)
-    # Define the CLF objectives
-    V_speed = cp.square(x[2]-x_goal[2])
-    V_angle = cp.square(x[3]-x_goal[3])
+    r_vals = cp.Parameter(n_controls, nonneg=True)  # Diagonal matrix of the control cost
+    LgLfb = cp.Parameter((1, n_controls))  # Gradient of the barrier function
+    Lf2b = cp.Parameter(1)  # Second derivative of the barrier function
+    p_alpha = cp.Parameter(1)  # Barrier function
 
-    LgV = cp.vstack([2*(x[2]-x_goal[2]), 2*(x[3]-x_goal[3])])
-    V = cp.vstack([V_speed, V_angle])
-    # Define the CLF constraint
-    clf_constraint = LgV*u + V <= delta
-    # CLF objective
-    Q = cp.diag([p[3],p[4]])
-    clf_objective = cp.quad_form(delta, Q)
 
+    # Define CLF Parameters
+    delta = cp.Variable(2)  # slack variable for the barrier function
+    q_vals = cp.Parameter(n_controls, nonneg=True)  # Penalty parameters diagonal matrix
+    LfV = cp.Parameter(2)  # Gradient of the value function
+    LgV = cp.Parameter(2)  # Gradient of the Lyapunov function along the trajectory
+    V = cp.Parameter(2)  # Lyapunov function
+
+    # Define CBF
+    cbf_constraint = -LgLfb @ u <= Lf2b + p_alpha
+
+    cbf_objective = cp.sum(cp.multiply(r_vals, cp.square(u)))
+    # Define CLF
+    clf_constraint = cp.multiply(LgV, u) + LfV + V <= delta
+    clf_objective = cp.sum(cp.multiply(q_vals, cp.square(delta)))
     # Define the CBF and CLF problems
-    cbf_problem = cp.Problem(cp.Minimize(cbf_objective+clf_objective), [cbf_constraint, clf_constraint])
+    clbf_problem = cp.Problem(cp.Minimize(cbf_objective + clf_objective), [cbf_constraint, clf_constraint])
 
-    return CvxpyLayer(cbf_problem, parameters=[x, x_obstacle, x_goal, R_vals, p], variables=[u, delta])
-
-def cbf_policy
+    return CvxpyLayer(clbf_problem, parameters=[r_vals, LgLfb, Lf2b, p_alpha, q_vals, LfV, LgV, V],
+                      variables=[u, delta])
 
 def nn_input(x):
-    nn_input = torch.zeros(x.shape[0], n_states + 1)
-    nn_input[:, :2] = x[:, :2]
-    nn_input[:, 2] = torch.sin(x[:, 2])
-    nn_input[:, 3] = torch.cos(x[:, 2])
+    nn_input = torch.zeros(n_states + 1)
+    nn_input[:n_states] = x[:n_states]
+    nn_input[3] = torch.sin(x[3])
+    nn_input[4] = torch.cos(x[3])
     return nn_input
 
-def clone_dubins_barrier_preferences(train = True):
+def construct_cbf(parameters: torch.Tensor, x, x_obstacle, x_goal):
+    """ Decompose the parameters into the CBF and CLF parameters and defines derivatives and constraint constants for
+    cbf and clf filters """
+    # Define the CBF parameters
+    p_cbf = parameters[:n_penalty_params] # Penalty parameters for class K barrier function
+    r_vals = parameters[n_penalty_params:n_penalty_params + n_controls] #  CBF control penalty parameters
+    q_vals = parameters[n_penalty_params + n_controls:n_penalty_params + 2 * n_controls] # CLF penalty parameters
+
+    # Compute CBF values
+    LgLfb = torch.reshape(torch.hstack([-2 * (x[0] - x_obstacle[0]) * x[2] * x[3] + 2 * (x[1] - x_obstacle[1]) * x[2] * x[4],
+                           2 * (x[0] - x_obstacle[0]) * x[4] + 2 * (x[1] - x_obstacle[1]) * x[3]]), (1, n_controls))
+    Lf2b = torch.reshape(2 * torch.square(x[2]), (1, 1))
+    Lfb = 2 * (x[0] - x_obstacle[0]) * x[2] * x[4] + 2 * (x[1] - x_obstacle[1]) * x[2] * x[3]
+    b = torch.sum(torch.square(x[0:2] - x_obstacle)) + radius ** 2
+    p_alpha = torch.reshape((p_cbf[0] + p_cbf[1]) * Lfb + p_cbf[1] * p_cbf[0] * b, (1, 1))
+    # Compute CLF values
+    V_speed = torch.square(x[2] - x_goal[2])
+    V_angle = torch.square(x[3] - x_goal[3])
+    LfV = torch.zeros(2)
+    LgV = torch.reshape(torch.vstack([2 * (x[2] - x_goal[2]), 2 * (x[3] - x_goal[3])]),(2,))
+    V = torch.reshape(torch.vstack([V_speed, V_angle]),(2,))
+
+    return r_vals, LgLfb, Lf2b, p_alpha, q_vals, LfV, LgV, V
+
+
+def clone_dubins_barrier_preferences(train=True):
+    # Define Barrier Function
+    barrier_fn = define_cbf_filter()
+    x_obstacle = torch.tensor(center)
+    x_goal = torch.tensor([0.0, 0.0, 0.5, 0.0])
+    barrier_policy_fn = lambda x, p: barrier_fn(*construct_cbf(p, x, x_obstacle, x_goal))[0]
     # -------------------------------------------
     # Clone the MPC policy
     # -------------------------------------------
@@ -167,11 +185,15 @@ def clone_dubins_barrier_preferences(train = True):
     hidden_layers = 4
     hidden_layer_width = 32
     cloned_policy = BarrierNet(
-        hidden_layers,
-        hidden_layer_width,
-        n_states,
-        n_controls,
-        state_space,
+        hidden_layers= hidden_layers,
+        hidden_layer_width= hidden_layer_width,
+        n_state_dims= n_states,
+        n_control_dims= n_controls,
+        n_input_dims= n_states + 1, # Add the sin and cos of the angle
+        n_output_dims= n_penalty_params + 2 * n_controls,
+        state_space=state_space,
+        barrier_net_fn=barrier_policy_fn,
+        preprocess_input_fn=nn_input,
         # load_from_file="mpc/tests/data/cloned_quad_policy_weight_decay.pth",
     )
 
@@ -189,6 +211,7 @@ def clone_dubins_barrier_preferences(train = True):
         )
 
     return cloned_policy
+
 
 def simulate_and_plot(policy):
     # -------------------------------------------
@@ -251,9 +274,10 @@ def simulate_and_plot(policy):
 
     plt.show()
 
+
 def save_to_onnx(policy):
     """Save to an onnx file"""
-    save_path = os.path.abspath('./data')+"/cloned_dubins_policy_weight_decay.onnx"
+    save_path = os.path.abspath('./data') + "/cloned_dubins_policy_weight_decay.onnx"
     pytorch_to_nnet(policy, n_states, n_controls, save_path)
 
     input_mins = [state_range[0] for state_range in state_space]
@@ -264,7 +288,8 @@ def save_to_onnx(policy):
     ranges += [1.0]
     onnx2nnet(save_path, input_mins, input_maxes, means, ranges)
 
+
 if __name__ == "__main__":
-    policy = clone_dubins_mpc(train=True)
+    policy = clone_dubins_barrier_preferences(train=True)
     save_to_onnx(policy)
     simulate_and_plot(policy)
