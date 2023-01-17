@@ -43,6 +43,27 @@ def add_dynamics_constraints(
 def dubins_car_dynamics(x: Variable, u: Variable) -> List[Variable]:
     """
     Dubins car dynamics, implemented using Casadi variables
+    args:
+        x: state variables
+        u: control inputs
+    """
+    # unpack variables
+    theta = x[2]
+    v = u[0]
+    omega = u[1]
+
+    # compute derivatives
+    xdot = [
+        v * casadi.cos(theta),
+        v * casadi.sin(theta),
+        omega,
+    ]
+
+    return xdot
+
+def car_2d_dynamics(x: Variable, u: Variable) -> List[Variable]:
+    """
+    Dubins car dynamics, implemented using Casadi variables
 
     args:
         x: state variables

@@ -108,7 +108,7 @@ class BarrierNet(torch.nn.Module):
             x = self.preprocess_input_fn(x)
         penalty_params = self.policy_nn(torch.from_numpy(x).float().to(self.device))
         output = self.barrier_net_fn(torch.from_numpy(x).float().to(self.device), penalty_params)
-        return torch.cat(output).detach().cpu().numpy()
+        return output.detach().cpu().numpy()
 
     def save_to_file(self, save_path: str):
         save_data = {
@@ -131,6 +131,7 @@ class BarrierNet(torch.nn.Module):
         learning_rate: float,
         batch_size: int = 64,
         save_path: Optional[str] = None,
+        load_checkpoint: Optional[str] = None,
     ):
         """Clone the provided expert policy. Uses dead-simple supervised regression
         to clone the policy (no DAgger currently).
@@ -151,7 +152,7 @@ class BarrierNet(torch.nn.Module):
 
         # Now get the expert's control input at each of those points
         u_expert = torch.zeros((n_pts, self.n_control_dims))
-        data_gen_range = tqdm(range(n_pts))
+        data_gen_range = tqdm(range(n_pts), ascii=True, desc="Generating data")
         data_gen_range.set_description("Generating training data...")
         for i in data_gen_range:
             u_expert[i, :] = expert(x_train[i, :])
@@ -165,13 +166,21 @@ class BarrierNet(torch.nn.Module):
         optimizer = torch.optim.Adam(
             self.parameters(), lr=learning_rate
         )
+        # Load checkpoint if provided
+        if load_checkpoint:
+            checkpoint = torch.load(load_checkpoint, map_location=self.device)
+            self.load_state_dict(checkpoint["model_state_dict"])
+            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+            epoch = checkpoint["epoch"]
+            loss = checkpoint["loss"]
+            n_epochs -= epoch
 
         # Optimize in mini-batches
         for epoch in range(n_epochs):
             permutation = torch.randperm(n_pts)
 
             loss_accumulated = 0.0
-            epoch_range = tqdm(range(0, n_pts, batch_size))
+            epoch_range = tqdm(range(0, n_pts, batch_size), ascii=True, desc="Epoch")
             epoch_range.set_description(f"Epoch {epoch} training...")
             for i in epoch_range:
                 batch_indices = permutation[i : i + batch_size]
@@ -180,8 +189,8 @@ class BarrierNet(torch.nn.Module):
 
                 # Forward pass: predict the control input
                 # iterate through the batch
-                u_predicted = torch.zeros((batch_size, self.n_control_dims))
-                for j in range(len(x_batch)):
+                u_predicted = torch.zeros((x_batch.shape[0], self.n_control_dims)).to(self.device)
+                for j in range(x_batch.shape[0]):
                     if self.preprocess_input_fn is not None:
                         x_in = self.preprocess_input_fn(x_batch[j, :])
                     else:
@@ -204,6 +213,12 @@ class BarrierNet(torch.nn.Module):
                 loss_accumulated += loss.detach()
 
             print(f"Epoch {epoch}: {loss_accumulated / (n_pts / batch_size)}")
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': self.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': loss_accumulated,
+            }, save_path)
 
-        if save_path is not None:
-            self.save_to_file(save_path)
+        # if save_path is not None:
+        #     self.save_to_file(save_path)
