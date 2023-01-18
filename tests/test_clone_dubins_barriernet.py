@@ -25,7 +25,7 @@ from cvxpylayers.torch import CvxpyLayer
 # PROBLEM PARAMETERS
 n_states = 4
 n_controls = 2
-horizon = 15
+horizon = 20
 dt = 0.1
 
 # -------- Define Vehicle Dynamics --------
@@ -103,7 +103,7 @@ def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
     # -------------------------------------------
     # Wrap the MPC problem to accept a tensor input and tensor output
     # -------------------------------------------
-    max_tries = 10
+    max_tries = 15
     def mpc_expert(current_state: torch.Tensor) -> torch.Tensor:
         # Initialize counters and variables
         tries = 0
@@ -138,7 +138,6 @@ def define_hocbf_clf_filter(n_controls, n_clf, n_cbf, n_cbf_slack, cntrl_bounds=
     u = cp.Variable((n_controls, 1))  # control input
     # Define the control Lyapunov function variables
     slack_clf = cp.Variable((n_clf, 1))  # slack variables
-    x_clf = cp.vstack([u, slack_clf])  # optimization variable
     # Define the control Barrier function variables
     if n_cbf > 1 and n_cbf_slack > 0:
         slack_cbf = cp.Variable((n_cbf_slack, 1))
@@ -149,8 +148,11 @@ def define_hocbf_clf_filter(n_controls, n_clf, n_cbf, n_cbf_slack, cntrl_bounds=
         slack = cp.vstack([slack_clf, slack_cbf])
     else:
         slack = slack_clf
+    if slack_cbf.shape[0] != n_cbf:
+        delta_cbf = cp.vstack([slack_cbf, torch.zeros(n_cbf - n_cbf_slack, 1)])
+    else:
+        delta_cbf = slack_cbf
     X = cp.vstack([u, slack])
-
     # -------- Define Differentiable Variables --------
     # Define Constraint Parameters CLF
     A_clf = cp.Parameter((n_clf, n_controls))  # CLF matrix
@@ -176,7 +178,7 @@ def define_hocbf_clf_filter(n_controls, n_clf, n_cbf, n_cbf_slack, cntrl_bounds=
     # Define the constraints CLF
     contraints += [A_clf @ u <= b_clf+slack_clf]
     # Define the constraints CBF
-    contraints += [A_cbf @ u <= b_cbf+slack_cbf]
+    contraints += [A_cbf @ u <= b_cbf+delta_cbf]
     # Define the constraints on the control input
     if cntrl_bounds:
         for control_idx, bound in enumerate(control_bounds):
@@ -214,48 +216,56 @@ def compute_parameters_hocbf(parameters: torch.Tensor, x: torch.Tensor, x_goal: 
     # TODO this can be called for automatic differentiation given a vector of Lyapunov functions
     LfV = torch.zeros(n_clf, 1).to(device).requires_grad_(False)
     LgV = torch.vstack([2 * (v - x_goal[2]),
-                        -2 * (torch.cos(theta) * (px - x_goal[0]) + torch.sin(theta) * (py - x_goal[1]))
-                        * (torch.cos(theta) * (py - x_goal[1]) - torch.sin(theta) * (px - x_goal[0]))])
-    V = torch.vstack([torch.square(x[2] - x_goal[2]),
-                      torch.square(torch.cos(x[3]) * (x[1] - x_goal[1]) - torch.sin(x[3]) * (x[0] - x_goal[0]))])
+                        -2 * (torch.cos(theta) * (px - x_goal[0]) + torch.sin(theta) *
+                              (py - x_goal[1])) * (torch.cos(theta) * (py - x_goal[1]) -
+                               torch.sin(theta) * (px - x_goal[0]))])
+    V_speed = torch.square(x[2] - x_goal[2])
+    V_angle = torch.square(torch.cos(theta) * (py - x_goal[1]) - torch.sin(theta) * (px - x_goal[0]))
+    V = torch.vstack([V_speed, V_angle])
     A_clf = torch.diag(LgV.squeeze())
-    b_clf = -LfV - clf_rates * V
+    b_clf = -LfV - clf_rates*V
     # Compute CBF parameters
     A_cbf = torch.zeros(n_cbf, n_controls).to(device)
     b_cbf = torch.zeros(n_cbf, 1).to(device)
     # Distance from Obstacle
-    b_dist = torch.square(px - x_obst[0]) + torch.square(py - x_obst[1]) ** 2 - r_obst ** 2
-    LgLfb_dist = torch.hstack([2 * torch.cos(theta) * (px - x_obst[0]) + 2 * torch.sin(theta) * (py - x_obst[1]),
-                               2 * v * torch.cos(theta) * (py - x_obst[1]) - 2 * v * torch.sin(theta) * (
-                                           px - x_obst[0])])
-    Lfb_dist = 2 * (px - x_obst[0]) * v * torch.cos(theta) + 2 * (py - x_obst[1]) * v * torch.sin(theta)
-    Lf2b_dist = 2 * torch.square(v)
-    A_cbf[0, :n_controls] = -LgLfb_dist
-    b_cbf[0] = Lf2b_dist + (cbf_rates[0] + cbf_rates[1]) * Lfb_dist + cbf_rates[0] * cbf_rates[1] * b_dist
+    for i in range(len(x_obst)):
+        p1,p2 = cbf_rates[i*2:i*2+2]
+        b_dist = (px - x_obst[i,0])**2 + (py - x_obst[i,1]) ** 2 - r_obst[i] ** 2
+        LgLfb_dist = torch.hstack([2 * torch.cos(theta) * (px - x_obst[i,0]) + 2 * torch.sin(theta) * (py - x_obst[i,1]),
+                                   2 * v * torch.cos(theta) * (py - x_obst[i,1]) - 2 * v * torch.sin(theta) *
+                                   (px - x_obst[i,0])])
+        Lfb_dist = 2 * (px - x_obst[i,0]) * v * torch.cos(theta) + \
+                   2 * (py - x_obst[i,1]) * v * torch.sin(theta)
+        Lf2b_dist = 2 * v**2
+        A_cbf[i, :n_controls] = -LgLfb_dist
+        b_cbf[i] = Lf2b_dist + (p1 + p2) * Lfb_dist + p1 * p2 * b_dist
     # Velocity Bounds Barrier
-    b_v = torch.vstack([v - 0.01, 2. - v])
-    Lgb_v = -torch.ones(2, 1).to(device).requires_grad_(False)
-    cbf_rates_v = cbf_rates[2:4]
-    A_cbf[1:3, :n_controls] = -Lgb_v
-    b_cbf[1:3] = cbf_rates_v * b_v
+    b_v = torch.vstack([v - 0.2, 2. - v])
+    Lgb_v = torch.tensor([1,-1]).to(device)
+    n_dist = len(x_obst)
+    cbf_rates_v = cbf_rates[sum(rel_degree[:n_dist]):]
+
+    A_cbf[n_dist:, 0] = -Lgb_v
+    b_cbf[n_dist:] = cbf_rates_v * b_v
 
     # Compute control input by passing the parameters to the CBF-CLF layer
     try:
-        u = hocbf_clf_layer(A_clf, b_clf, A_cbf, b_cbf, cntrl_weights)[0]
+        u = hocbf_clf_layer(A_clf, b_clf, A_cbf, b_cbf, cntrl_weights, solver_args={"solve_method": "ECOS"})[0]
     except Exception as e:
         warnings.warn("Error: {}".format(e))
         u = torch.zeros(n_controls).to(device)
 
-    return u
+
+    return u.squeeze()
 
 
 def clone_dubins_barrier_preferences(train=True, load=False):
     # Define Barrier Function
     barrier_fn = define_hocbf_clf_filter(n_controls, n_clf, n_cbf, n_cbf_slack, cntrl_bounds=control_bounds,
                                          slack_weights=slack_weights)
-    x_obstacle = torch.tensor(center).to(device).requires_grad_(False)
+    x_obstacle = torch.tensor([center]).to(device).requires_grad_(False)
     x_g = torch.tensor(x_goal).to(device).requires_grad_(False)
-    r_obstacle = torch.tensor(radius+margin).to(device).requires_grad_(False)
+    r_obstacle = torch.tensor([radius + margin]).to(device).requires_grad_(False)
 
     barrier_policy_fn = lambda x_state, p_weights: compute_parameters_hocbf(p_weights, x_state, x_g, x_obstacle,
                                                                             r_obstacle, barrier_fn, n_controls, n_clf,
@@ -279,7 +289,7 @@ def clone_dubins_barrier_preferences(train=True, load=False):
         # load_from_file="mpc/tests/data/cloned_quad_policy_weight_decay.pth",
     )
 
-    n_pts = int(1e4)
+    n_pts = int(2e4)
     n_epochs = 500
     learning_rate = 1e-3
     # Define Training optimizer
@@ -357,5 +367,5 @@ def simulate_and_plot(policy):
     plt.show()
 
 if __name__ == "__main__":
-    policy = clone_dubins_barrier_preferences(train= True, load=True)
+    policy = clone_dubins_barrier_preferences(train= True, load=False)
     simulate_and_plot(policy)

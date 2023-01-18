@@ -174,7 +174,7 @@ class BarrierNet(torch.nn.Module):
             epoch = checkpoint["epoch"]
             loss = checkpoint["loss"]
             n_epochs -= epoch
-
+        curr_min_loss = np.inf
         # Optimize in mini-batches
         for epoch in range(n_epochs):
             permutation = torch.randperm(n_pts)
@@ -213,12 +213,14 @@ class BarrierNet(torch.nn.Module):
                 loss_accumulated += loss.detach()
 
             print(f"Epoch {epoch}: {loss_accumulated / (n_pts / batch_size)}")
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': self.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'loss': loss_accumulated,
-            }, save_path)
+            if loss_accumulated < curr_min_loss:
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': self.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'loss': loss_accumulated,
+                }, save_path)
+                curr_min_loss = loss_accumulated
 
         # if save_path is not None:
         #     self.save_to_file(save_path)
