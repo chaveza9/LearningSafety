@@ -19,7 +19,7 @@ class BarrierNet(torch.nn.Module):
         n_input_dims: int,
         n_output_dims: int,
         state_space: List[Tuple[float, float]],
-        barrier_net_fn: CvxpyLayer,
+        barrier_net_fn: Callable,
         preprocess_input_fn: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
         load_from_file: Optional[str] = None,
     ):

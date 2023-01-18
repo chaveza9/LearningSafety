@@ -12,11 +12,8 @@ import warnings
 
 sys.path.append(os.path.abspath('..'))
 
-from mpc.costs import lqr_running_cost, squared_error_terminal_cost
 from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from mpc.mpc import construct_MPC_problem, solve_MPC_problem
-from mpc.obstacle_constraints import hypersphere_sdf
-from mpc.simulator import simulate_nn
+from mpc.simulator import simulate_barriernet
 
 from cbf.barriernet import BarrierNet
 from cvxpylayers.torch import CvxpyLayer
@@ -32,9 +29,9 @@ dt = 0.1
 dynamics_fn = dubins_car_dynamics
 # Define limits for state space
 state_space = [(0.0, 50.0),
-                (0.0, 50.0),
-                (0, 2),
-                (-np.pi, np.pi)]
+               (0.0, 50.0),
+               (0, 2),
+               (-np.pi, np.pi)]
 # Define control bounds
 control_bounds = [1, 0.5]
 torch.set_default_dtype(torch.float64)
@@ -45,24 +42,18 @@ n_clf_slack = n_clf  # Number of CLF slack variables
 n_cbf_slack = 1  # Number of CBF slack variables
 slack_weights = [1., 1., 1000.]
 rel_degree = [2, 1, 1]  # Relative degree of the CBFs [distance, v_min, v_max]
-num_penalty_terms = n_controls+n_clf+sum(rel_degree)
+num_penalty_terms = n_controls+n_clf + sum(rel_degree)
 # -------- Define obstacles --------
-radius = 0.2
-margin = 0.1
-center = [-1.0, 0.0]
+radius = 7.0
+margin = 0.0
+center = [32.0, 25.0]
 # --------- Define Goal and Initial State ---------
 # Define initial states
 x0s = [
-    np.array([-2.0, 0.0, 0.0, 0.0]),
-    np.array([-2.0, 0.1, 0.0, 0.0]),
-    np.array([-2.0, 0.2, 0.0, 0.0]),
-    np.array([-2.0, 0.5, 0.0, 0.0]),
-    np.array([-2.0, -0.1, 0.0, 0.0]),
-    np.array([-2.0, -0.2, 0.0, 0.0]),
-    np.array([-2.0, -0.5, 0.0, 0.0]),
+    np.array([5.0, 25.0, 0.0, 0.0]),
 ]
 # Define goal state
-x_goal = np.array([0.0, 0.001, 0.5, 0.0])
+x_goal = np.array([45.0, 25.0000001, 2])
 
 # -------------------------------------------
 # DEFINE DEVICE
@@ -73,65 +64,7 @@ else:
     device = torch.device("cpu")
 
 
-def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
-    """Run a test of obstacle avoidance MPC with a dubins car and return the results"""
-    # -------------------------------------------
-    # Define the problem
-    # -------------------------------------------
-    # Define obstacles by defining a signed distance function
-    obstacle_fns = [(lambda x: hypersphere_sdf(x, radius, [0, 1], center), margin)]
-
-    # Define costs
-    running_cost_fn = lambda x, u: lqr_running_cost(
-        x, u, x_goal, dt * np.diag([1.0, 1.0, 0.1, 0.0]), 0.05 * np.eye(2)
-    )
-    terminal_cost_fn = lambda x: squared_error_terminal_cost(x, x_goal)
-
-    # Define MPC problem
-    opti, x0_variables, u0_variables, x_variables, u_variables = construct_MPC_problem(
-        n_states,
-        n_controls,
-        horizon,
-        dt,
-        dynamics_fn,
-        obstacle_fns,
-        running_cost_fn,
-        terminal_cost_fn,
-        control_bounds,
-    )
-
-    # -------------------------------------------
-    # Wrap the MPC problem to accept a tensor input and tensor output
-    # -------------------------------------------
-    max_tries = 10
-    def mpc_expert(current_state: torch.Tensor) -> torch.Tensor:
-        # Initialize counters and variables
-        tries = 0
-        success = False
-        x_guess = None
-        u_guess = None
-
-        while not success and tries < max_tries:
-            success, control_out, _, _ = solve_MPC_problem(
-                opti.copy(),
-                x0_variables,
-                u0_variables,
-                current_state.detach().numpy(),
-                x_variables=x_variables,
-                u_variables=u_variables,
-                x_guess=x_guess,
-                u_guess=u_guess,
-            )
-            tries += 1
-
-            if not success:
-                print(f"failed after {tries} tries")
-
-        return torch.from_numpy(control_out)
-
-    return mpc_expert
-
-
+# -------------------------------------------
 def define_hocbf_clf_filter(n_controls, n_clf, n_cbf, n_cbf_slack, cntrl_bounds=[], slack_weights=[]):
     """ Define a General Differentiable Control Lyapunov function and High Order Control Barrier function """
     # -------- Define Optimization Variables --------
@@ -199,6 +132,7 @@ def compute_parameters_hocbf(parameters: torch.Tensor, x: torch.Tensor, x_goal: 
     if len(rel_degree) != n_cbf:
         raise "Error: the number of relative degrees must be equal to the number of CBFs"
     # Extract vehicle state
+    x = torch.from_numpy(x).to(device)
     px,py,v,theta = x
     # -------- Extract Parameters from NN --------
     # Compute the total number of cbf rates corresponding to the relative degree
@@ -246,68 +180,7 @@ def compute_parameters_hocbf(parameters: torch.Tensor, x: torch.Tensor, x_goal: 
         warnings.warn("Error: {}".format(e))
         u = torch.zeros(n_controls).to(device)
 
-    return u
-
-
-def clone_dubins_barrier_preferences(train=True, load=False):
-    # Define Barrier Function
-    barrier_fn = define_hocbf_clf_filter(n_controls, n_clf, n_cbf, n_cbf_slack, cntrl_bounds=control_bounds,
-                                         slack_weights=slack_weights)
-    x_obstacle = torch.tensor(center).to(device).requires_grad_(False)
-    x_g = torch.tensor(x_goal).to(device).requires_grad_(False)
-    r_obstacle = torch.tensor(radius+margin).to(device).requires_grad_(False)
-
-    barrier_policy_fn = lambda x_state, p_weights: compute_parameters_hocbf(p_weights, x_state, x_g, x_obstacle,
-                                                                            r_obstacle, barrier_fn, n_controls, n_clf,
-                                                                            n_cbf, rel_degree, device)
-    # -------------------------------------------
-    # Clone the MPC policy
-    # -------------------------------------------
-    mpc_expert = define_dubins_mpc_expert()
-    hidden_layers = 4
-    hidden_layer_width = 32
-    cloned_policy = BarrierNet(
-        hidden_layers= hidden_layers,
-        hidden_layer_width= hidden_layer_width,
-        n_state_dims= n_states,
-        n_control_dims= n_controls,
-        n_input_dims= n_states,
-        n_output_dims= num_penalty_terms,
-        state_space=state_space,
-        barrier_net_fn=barrier_policy_fn,
-        preprocess_input_fn=None,
-        # load_from_file="mpc/tests/data/cloned_quad_policy_weight_decay.pth",
-    )
-
-    n_pts = int(1e4)
-    n_epochs = 500
-    learning_rate = 1e-3
-    # Define Training optimizer
-    if train and not load:
-        cloned_policy.clone(
-            mpc_expert,
-            n_pts,
-            n_epochs,
-            learning_rate,
-            batch_size=32,
-            save_path="./data/cloned_dubins_barrier_policy_weight_decay.pt",
-        )
-    elif train and load:
-        checkpoint = "./data/cloned_dubins_barrier_policy_weight_decay.pt"
-        cloned_policy.clone(
-            mpc_expert,
-            n_pts,
-            n_epochs,
-            learning_rate,
-            save_path="./data/cloned_dubins_barrier_policy_weight_decay.pt",
-            load_checkpoint=checkpoint,
-        )
-    else:
-        load_checkpoint = "./data/cloned_dubins_barrier_policy_weight_decay.pt"
-        checkpoint = torch.load(load_checkpoint, map_location=device)
-        cloned_policy.load_state_dict(checkpoint["model_state_dict"])
-
-    return cloned_policy
+    return u.squeeze().detach().cpu()
 
 
 def simulate_and_plot(policy):
@@ -318,12 +191,14 @@ def simulate_and_plot(policy):
     ax = fig.add_subplot(1, 1, 1)
     ax.plot([], [], "ro", label="Start")
 
-    n_steps = 100
+    n_steps = 500
     for x0 in x0s:
         # Run the cloned policy
-        _, x, u = simulate_nn(
+        _, x, u = simulate_barriernet(
             policy,
             x0,
+            n_states,
+            n_controls,
             dt,
             dynamics_fn,
             n_steps,
@@ -345,10 +220,13 @@ def simulate_and_plot(policy):
 
     ax.set_xlabel("x")
     ax.set_ylabel("y")
-
-    ax.set_xlim([-2.5, 0.5])
-    ax.set_ylim([-1.0, 1.0])
-    ax.title.set_text("Cloned Dubins Car Policy")
+    lim_min = min(min(x[:,0]), min(x[:,1]))
+    lim_max = max(max(x[:,0]), max(x[:,1]))
+    lim_min = min([lim_min, center[0]-radius, center[1] - radius]);
+    lim_max = max([lim_max, center[0]+radius, center[1] + radius]);
+    ax.set_xlim([lim_min, lim_max])
+    ax.set_ylim([lim_min, lim_max])
+    ax.title.set_text("Test BarrierNet Policy")
 
     ax.set_aspect("equal")
 
@@ -356,6 +234,15 @@ def simulate_and_plot(policy):
 
     plt.show()
 
+
 if __name__ == "__main__":
-    policy = clone_dubins_barrier_preferences(train= True, load=True)
+    barrier_fn = define_hocbf_clf_filter(n_controls, n_clf, n_cbf, n_cbf_slack, cntrl_bounds=control_bounds,
+                                         slack_weights=slack_weights)
+    x_obstacle = torch.tensor(center).to(device).requires_grad_(False)
+    x_g = torch.tensor(x_goal).to(device).requires_grad_(False)
+    r_obstacle = torch.tensor(radius + margin).to(device).requires_grad_(False)
+    p_weights = torch.tensor([1.,1.,1., 1., 1., 50., 1., 1.]).to(device)
+    policy = lambda x_state: compute_parameters_hocbf(p_weights, x_state, x_g, x_obstacle,
+                                                                            r_obstacle, barrier_fn, n_controls, n_clf,
+                                                                            n_cbf, rel_degree, device)
     simulate_and_plot(policy)

@@ -200,7 +200,7 @@ def define_cbf_clf_filter():
     return CvxpyLayer(clf_problem, parameters=[LgLfb, Lf2b, p_alpha, r_vals, LfV, LgV, V],
                       variables=[u, delta])
 
-def construct_clf_cbf(parameters: torch.Tensor, clf_layer, x, x_obstacle, x_goal):
+def construct_clf_cbf(parameters: torch.Tensor, clf_layer, x, x_obstacle, x_goal)->torch.Tensor:
     """ Decompose the parameters into the CBF and CLF parameters and defines derivatives and constraint constants for
     cbf and clf filters """
     # Define the CBF parameters
@@ -237,11 +237,12 @@ def construct_clf_cbf(parameters: torch.Tensor, clf_layer, x, x_obstacle, x_goal
                                       -2*(torch.cos(x[3])*(x[0] - x_goal[0]) +torch.sin(x[3])*(x[1] - x_goal[1]))
                                       *(torch.cos(x[3])*(x[1] - x_goal[1]) - torch.sin(x[3])*(x[0] - x_goal[0]))]),(2,))
     V = torch.reshape(torch.vstack([V_speed, V_angle]),(2,))*q_vals_clf
-    # try:
-    u_ref = clf_layer(r_vals_clf, LfV, LgV, V)[0]
+    try:
+        u_ref = clf_layer(r_vals_clf, LfV, LgV, V)[0]
+    except:
+        u_ref = torch.zeros(n_controls).to(device)
 
-    return u_ref, LgLfb, Lf2b, p_alpha
-    # return u_ref
+    return u_ref
 
 
 def simulate_and_plot(policy):
