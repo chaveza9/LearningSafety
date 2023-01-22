@@ -1,4 +1,4 @@
-"""Test the obstacle avoidance BarrierNet for a dubins vehicle"""
+"""Test the obstacle avoidance BarrierNetLayer for a dubins vehicle"""
 from typing import Callable, Tuple, List
 
 import numpy as np
@@ -15,7 +15,7 @@ sys.path.append(os.path.abspath('..'))
 from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from mpc.simulator import simulate_barriernet
 
-from cbf.barriernet import BarrierNet
+from cbf.mlpbarriernet import MLPBarrierNet
 from cvxpylayers.torch import CvxpyLayer
 
 # -------------------------------------------
@@ -235,7 +235,7 @@ def simulate_and_plot(policy):
     lim_max = max([lim_max, center[0]+radius, center[1] + radius]);
     ax.set_xlim([lim_min, lim_max])
     ax.set_ylim([lim_min, lim_max])
-    ax.title.set_text("Test BarrierNet Policy")
+    ax.title.set_text("Test BarrierNetLayer Policy")
 
     ax.set_aspect("equal")
 

@@ -104,7 +104,7 @@ def construct_MPC_problem(
     obstacle_fns: List[Tuple[ObstacleFunction, float]],
     running_cost_fn: RunningCostFunction,
     terminal_cost_fn: TerminalCostFunction,
-    control_bounds: List[float],
+    control_bounds: List[Tuple[float, float]],
 ) -> Tuple[casadi.Opti, casadi.MX, casadi.MX, casadi.MX, casadi.MX]:
     """
     Define a casadi Opti object containing a receding-horizon obstacle-avoidance MPC
@@ -151,8 +151,8 @@ def construct_MPC_problem(
     # Add the control bounds constraints
     for control_idx, bound in enumerate(control_bounds):
         for t in range(horizon):
-            opti.subject_to(u[t, control_idx] <= bound)
-            opti.subject_to(u[t, control_idx] >= -bound)
+            opti.subject_to(u[t, control_idx] <= bound[1])
+            opti.subject_to(u[t, control_idx] >= bound[0])
 
     # No need to add initial state constraints; that will be added when we solve
     # the problem

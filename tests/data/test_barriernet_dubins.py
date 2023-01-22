@@ -1,4 +1,4 @@
-"""Test the obstacle avoidance BarrierNet for a dubins vehicle"""
+"""Test the obstacle avoidance BarrierNetLayer for a dubins vehicle"""
 from typing import Callable, Tuple, List
 
 import numpy as np
@@ -21,7 +21,7 @@ from mpc.obstacle_constraints import hypersphere_sdf
 from mpc.simulator import simulate_barriernet
 
 from mpc.network_utils import pytorch_to_nnet
-from cbf.barriernet import BarrierNet
+from cbf.mlpbarriernet import MLPBarrierNet
 from cvxpylayers.torch import CvxpyLayer
 
 n_states = 3

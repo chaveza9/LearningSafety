@@ -7,7 +7,6 @@ from tqdm import tqdm
 
 from mpc.dynamics_constraints import DynamicsFunction
 from mpc.mpc import solve_MPC_problem
-from mpc.nn import PolicyCloningModel
 
 
 def simulate_mpc(
@@ -101,7 +100,7 @@ def simulate_mpc(
 
 
 def simulate_nn(
-    policy: PolicyCloningModel,
+    policy,
     x0: np.ndarray,
     dt: float,
     dynamics_fn: DynamicsFunction,
@@ -155,7 +154,7 @@ def simulate_nn(
     return t, x, u
 
 def simulate_barriernet(
-    policy: PolicyCloningModel,
+    policy,
     x0: np.ndarray,
     n_states: int,
     n_controls: int,
