@@ -22,14 +22,14 @@ from cvxpylayers.torch import CvxpyLayer
 # PROBLEM PARAMETERS
 n_states = 4
 n_controls = 2
-horizon = 20
+horizon = 10
 dt = 0.1
 
 # -------- Define Vehicle Dynamics --------
 dynamics_fn = dubins_car_dynamics
 # Define limits for state space
-state_space = [(0.0, 50.0),
-               (0.0, 50.0),
+state_space = [(-3, 3),
+               (-2, 2),
                (0, 2),
                (-np.pi, np.pi)]
 # Define control bounds
@@ -95,7 +95,7 @@ def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
         control_bounds,
     )
 
-    # -------------------------------------------
+    # --------------- ----------------------------
     # Wrap the MPC problem to accept a tensor input and tensor output
     # -------------------------------------------
     max_tries = 15
@@ -141,8 +141,6 @@ def compute_parameters_hocbf(u_ref: torch.Tensor, cbf_rates: torch.Tensor, x: to
     # -------- Extract Parameters from NN --------
     # Compute the total number of cbf rates corresponding to the relative degree
     n_cbf_rates = sum(rel_degree)
-    # Extract the CBF rates from the NN
-    cbf_rates = torch.reshape(cbf_rates, (n_cbf_rates, 1))
     # -------- Compute CLF and CBF Constraint Parameters --------
     # Compute CBF parameters
     A_cbf = torch.zeros(n_cbf, n_controls).repeat(x.shape[0], 1, 1).to(device)
@@ -150,7 +148,7 @@ def compute_parameters_hocbf(u_ref: torch.Tensor, cbf_rates: torch.Tensor, x: to
     # Distance from Obstacle
     x_obst = torch.atleast_2d(x_obst)
     for i in range(len(x_obst)):
-        p1, p2 = cbf_rates[i * 2:i * 2 + 2]
+        p1, p2 = cbf_rates[:,i * 2],cbf_rates[:,i * 2+1]
         b_dist = (px - x_obst[i, 0]) ** 2 + (py - x_obst[i, 1]) ** 2 - r_obst[i] ** 2
         LgLfb_dist = torch.vstack(
             [2 * torch.cos(theta) * (px - x_obst[i, 0]) + 2 * torch.sin(theta) * (py - x_obst[i, 1]),
@@ -161,6 +159,13 @@ def compute_parameters_hocbf(u_ref: torch.Tensor, cbf_rates: torch.Tensor, x: to
         Lf2b_dist = 2 * v ** 2
         A_cbf[i::len(x_obst), i, :n_controls] = -LgLfb_dist.T
         b_cbf[i::len(x_obst), i, :] = torch.reshape(Lf2b_dist + (p1 + p2) * Lfb_dist + p1 * p2 * b_dist, (len(x), 1))
+    # Velocity Bounds barrier
+    # b_v = torch.vstack([v - 0.1, 2. - v])
+    # LgLfb_v = torch.vstack([torch.ones_like(v), -torch.ones_like(v)])
+    # n_dist = len(x_obst)
+    # cbf_rates_v = cbf_rates[sum(rel_degree[:n_dist]):]
+    #
+    # A_cbf[n_dist::len(x_obst)+2, n_dist, :n_controls] = -LgLfb_v.T
 
     return u_ref, A_cbf, b_cbf
 
@@ -197,9 +202,9 @@ def clone_dubins_barrier_preferences(train=True, load=False):
         preprocess_barrier_input_fn=process_barrier_inputs
     )
 
-    n_pts = int(1e4)
-    n_epochs = 100
-    learning_rate = 0.01
+    n_pts = int(2e4)
+    n_epochs = 300
+    learning_rate = 0.001
     path = "./data/cloned_barrier.pt"
     # Define Training optimizer
     if train and not load:
@@ -208,7 +213,7 @@ def clone_dubins_barrier_preferences(train=True, load=False):
             n_pts,
             n_epochs,
             learning_rate,
-            batch_size=32,
+            batch_size=128,
             save_path=path,
             x_des=x_g,
             x_obs=x_obstacle,
@@ -245,7 +250,7 @@ def simulate_and_plot(policy):
     x_obstacle = torch.tensor([center]).to(device)
     x_g = torch.tensor(x_goal).to(device)
 
-    policy_fn = lambda x_state: policy(x_state, x_obstacle.squeeze, x_g.squeeze)
+    policy_fn = lambda x_state: policy.eval_np(x_state, x_obstacle.squeeze(), x_g.squeeze())
     n_steps = 100
     for x0 in x0s:
         # Run the cloned policy

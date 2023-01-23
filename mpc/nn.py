@@ -60,7 +60,7 @@ class PolicyCloningModel(torch.nn.Module):
             self.policy_layers[f"layer_{i}_linear"] = nn.Linear(
                 self.hidden_layer_width, self.hidden_layer_width
             )
-            self.policy_layers[f"layer_{i}_activation"] = nn.ReLU()
+            self.policy_layers[f"layer_{i}_activation"] =nn.ReLU()
         self.policy_layers["output_linear"] = nn.Linear(
             self.hidden_layer_width, self.n_control_dims
         )

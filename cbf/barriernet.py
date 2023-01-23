@@ -227,23 +227,25 @@ class BarrierNetLayer(nn.Module):
         self.device = device
         # ------------------- Construct Policy Network -------------------#
         # Create nn parameters
-        self.cbf_rates = nn.Parameter(torch.randn(sum(cbf_rel_degree), 1))
+        # self.cbf_rates = nn.Parameter(torch.randn(sum(cbf_rel_degree), 1)).to(self.device)
         # Define slack weights for the CLF and CBF objectives
         weights = self.cbf_slack_weight
         self.cbf_layer = self._define_hocbf_filter(weights)
         self.solver_opts = solver_opts
 
-    def forward(self, x_state: torch.Tensor, u_ref: torch.Tensor) -> torch.Tensor:
+    def forward(self, x_state: torch.Tensor, u_ref: torch.Tensor, cbf_rates: torch.Tensor) -> torch.Tensor:
         """ Forward pass of the policy network."""
         # Get the control input from the CvxpyLayer
         # Deconstruct the weights (CLF rates always come first)
         if x_state.shape[0] > 1:
-            u_ref = u_ref.reshape((x_state.shape[0],self.n_control_dims,1))
+            u_ref = u_ref.reshape((x_state.shape[0],self.n_control_dims,1)).to(self.device)
         else:
-            u_ref = u_ref.reshape((self.n_control_dims, 1))
+            u_ref = u_ref.reshape((self.n_control_dims, 1)).to(self.device)
         # Compute the CBF constraints
+        # u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, cbf_rates),
+        #                    solver_args=self.solver_opts)[0]
         try:
-            u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, self.cbf_rates.relu()),
+            u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, cbf_rates),
                                solver_args=self.solver_opts)[0]
         except Exception as e:
             if self.verbose:
@@ -279,10 +281,10 @@ class BarrierNetLayer(nn.Module):
             n_weights = len(slack_weights)
             if n_weights != n_slack:
                 raise "Error: the number of slack weights must be equal to the number of slack variables"
-            weights = torch.tensor(slack_weights).to(self.device).reshape(n_slack, 1)
+            weights = torch.tensor(slack_weights).reshape(n_slack, 1)
             objective_slack = cp.sum(cp.multiply(weights, slack_cbf))
         else:
-            objective_slack = torch.zeros(1, 1).to(self.device)
+            objective_slack = torch.zeros(1, 1)
         # Compute the objective function
         objective = 0.5 * cp.Minimize(cp.sum(cp.square(u-u_ref)) + objective_slack)
         # -------- Define Constraints --------
@@ -293,6 +295,9 @@ class BarrierNetLayer(nn.Module):
         for control_idx, bound in enumerate(self.control_bounds):
             contraints += [u[control_idx] <= bound[1]]
             contraints += [u[control_idx] >= bound[0]]
+        #hardcode velocity constraint
+       # constraints += -u[1) + p1 * (2 - v) >= 0)
+       #  opti.subject_to(u(1) + p1 * (v - 0.1) >= 0
         # -------- Define the Problem --------
         problem = cp.Problem(objective, contraints)
         if self.n_cbf_slack > 0:

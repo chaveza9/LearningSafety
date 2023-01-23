@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath('..'))
 
 
 from mpc.costs import lqr_running_cost, squared_error_terminal_cost
-from mpc.dynamics_constraints import dubins_car_dynamics
+from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from mpc.mpc import construct_MPC_problem
 from mpc.obstacle_constraints import hypersphere_sdf
 from mpc.simulator import simulate_mpc
@@ -22,7 +22,7 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
     # -------------------------------------------
     n_states = 4
     n_controls = 2
-    horizon = 50
+    horizon =10
     dt = 0.1
 
     # Define dynamics
@@ -42,7 +42,8 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
     terminal_cost_fn = lambda x: squared_error_terminal_cost(x, x_goal)
 
     # Define control bounds
-    control_bounds = [0.5, np.pi/2]
+    control_bounds = [(-1, 1),
+                      (-0.5, 0.5)]  # [m/s^2, rad/s]
 
     # Define MPC problem
     opti, x0_variables, u0_variables, x_variables, u_variables = construct_MPC_problem(
@@ -77,13 +78,13 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
 
 def run_and_plot_dubins_mpc():
     x0s = [
-        np.array([-2.0, 0.0, 0.0, 0.0]),
-        np.array([-2.0, 0.1, 0.0, 0.0]),
-        np.array([-2.0, 0.2, 0.0, 0.0]),
-        np.array([-2.0, 0.5, 0.0, 0.0]),
-        np.array([-2.0, -0.1, 0.0, 0.0]),
-        np.array([-2.0, -0.2, 0.0, 0.0]),
-        np.array([-2.0, -0.5, 0.0, 0.0]),
+        np.array([-3.0, 0.0, 0.0, 0.0]),
+        np.array([-3.0, 0.1, 0.0, 0.0]),
+        np.array([-3.0, 0.2, 0.0, 0.0]),
+        np.array([-3.0, 0.5, 0.0, 0.0]),
+        np.array([-3.0, -0.1, 0.0, 0.0]),
+        np.array([-3.0, -0.2, 0.0, 0.0]),
+        np.array([-3.0, -0.5, 0.0, 0.0]),
     ]
 
     fig = plt.figure(figsize=plt.figaspect(1.0))
@@ -113,7 +114,7 @@ def run_and_plot_dubins_mpc():
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
-    ax.set_xlim([-2.5, 0.5])
+    ax.set_xlim([-3.5, 0.5])
     ax.set_ylim([-1.0, 1.0])
 
     ax.set_aspect("equal")

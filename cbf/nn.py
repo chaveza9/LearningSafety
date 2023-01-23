@@ -77,25 +77,24 @@ class PolicyCloningModel(torch.nn.Module):
 
         # ----------------- Construct MLP Network -----------------
         # Compute the output dimension of the MLP
-        self.n_output_dims = sum(cbf_rel_degree)
+        self.n_output_dims = n_control_dims+sum(cbf_rel_degree)
         self.policy_layers: OrderedDict[str, nn.Module] = OrderedDict()
         self.policy_layers["input_linear"] = nn.Linear(
             self.n_input_dims,
             self.hidden_layer_width,
         )
-        self.policy_layers["input_activation"] = nn.Tanh()
+        self.policy_layers["input_activation"] = nn.Softplus()
         for i in range(self.hidden_layers):
             self.policy_layers[f"layer_{i}_linear"] = nn.Linear(
                 self.hidden_layer_width, self.hidden_layer_width
             )
-            self.policy_layers[f"layer_{i}_activation"] = nn.Tanh()
+            self.policy_layers[f"layer_{i}_activation"] = nn.Softplus()
         # Output the penalty parameters for cbf
         self.policy_layers["output_linear"] = nn.Linear(
             self.hidden_layer_width, self.n_output_dims
         )
-        # self.policy_layers["output_activation"] = nn.Softplus()
-        # Construct the policy network
-        self.policy_nn = nn.Sequential(self.policy_layers)
+        # Convert to sequential model
+        self.policy_nn = nn.Sequential(self.policy_layers).to(self.device)
 
         # ----------------- Construct Barrier Network -----------------
         self.barrier_layer = BarrierNetLayer(
@@ -131,25 +130,31 @@ class PolicyCloningModel(torch.nn.Module):
         else:
             x_in = x.to(self.device)
         # pass state through policy network
-        u_ref = self.policy_nn(x_in)
+        u_out = self.policy_nn(x_in)
+        u_ref = u_out[:, :self.n_control_dims]
+        cbf_rates = u_out[:, self.n_control_dims:]
         # pass state and penalty parameters through barrier net
-        return self.barrier_layer(x.to(self.device), u_ref)
+        return self.barrier_layer(x.to(self.device), u_ref, cbf_rates)
 
     def eval_np(self, x: np.ndarray, x_obs: Optional[np.ndarray] = None, x_des: Optional[np.ndarray] = None):
         # Construct the input to the barrier net
-        x = torch.atleast_2d(x)
+
+        x = torch.atleast_2d(torch.from_numpy(x)).to(self.device)
         if x_obs is not None and x_des is not None:
-            x_obs = x_obs.repeat(x.shape[0], 1)
-            x_des = x_des.repeat(x.shape[0], 1)
+            x_obs = x_obs.repeat(x.shape[0], 1).to(self.device)
+            x_des = x_des.repeat(x.shape[0], 1).to(self.device)
             x_in = torch.hstack([x, x_obs, x_des]).to(self.device)
         elif x_obs is not None and x_des is None:
-            x_obs = x_obs.repeat(x.shape[0], 1)
+            x_obs = x_obs.repeat(x.shape[0], 1).to(self.device)
             x_in = torch.hstack([x, x_obs]).to(self.device)
         else:
             x_in = x.to(self.device)
 
-        penalty_params = self.policy_nn(x_in)
-        return self.barrier_layer(x.to(self.device), penalty_params).detach().cpu().numpy()
+        u_out = self.policy_nn(x_in)
+        u_ref = u_out[:, :self.n_control_dims]
+        cbf_rates = u_out[:, self.n_control_dims:]
+        # pass state and penalty parameters through barrier net
+        return self.barrier_layer(x.to(self.device), u_ref, cbf_rates).detach().cpu().squeeze()
 
     def save_to_file(self, save_path: str):
         save_data = {

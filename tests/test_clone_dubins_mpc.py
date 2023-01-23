@@ -12,7 +12,7 @@ sys.path.append(os.path.abspath('..'))
 from NNet.converters.onnx2nnet import onnx2nnet
 
 from mpc.costs import lqr_running_cost, squared_error_terminal_cost
-from mpc.dynamics_constraints import dubins_car_dynamics
+from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from mpc.mpc import construct_MPC_problem, solve_MPC_problem
 from mpc.obstacle_constraints import hypersphere_sdf
 from mpc.simulator import simulate_nn
@@ -22,7 +22,7 @@ from mpc.nn import PolicyCloningModel
 
 n_states = 4
 n_controls = 2
-horizon = 20
+horizon = 15
 dt = 0.1
 
 # Define dynamics
@@ -34,12 +34,10 @@ margin = 0.1
 center = [-1.0, 0.0]
 
 # Define limits for state space
-state_space = [
-    (-2.0, 2.0),
-    (-2.0, 2.0),
-    (-3.0, 3.0),
-    (-np.pi, np.pi),
-]
+state_space = [(-2, 2),
+               (-1, 1),
+               (0, 2),
+               (-np.pi, np.pi)]
 
 def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
     """Run a test of obstacle avoidance MPC with a dubins car and return the results"""
@@ -57,7 +55,7 @@ def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
     terminal_cost_fn = lambda x: squared_error_terminal_cost(x, x_goal)
 
     # Define control bounds
-    control_bounds = [0.5, np.pi / 2]
+    control_bounds = [(-0.5, 0.5), (-np.pi / 2, np.pi / 2)]
 
     # Define MPC problem
     opti, x0_variables, u0_variables, x_variables, u_variables = construct_MPC_problem(
@@ -120,8 +118,8 @@ def clone_dubins_mpc(train = True):
         # load_from_file="mpc/tests/data/cloned_quad_policy_weight_decay.pth",
     )
 
-    n_pts = int(2e4)
-    n_epochs = 1000
+    n_pts = int(1e4)
+    n_epochs = 200
     learning_rate = 1e-3
     # Define Training optimizer
     if train:
