@@ -1,0 +1,3 @@
+[submodule "UMNN"]
+	path = UMNN
+	url = git@github.com:AWehenkel/UMNN.git

@@ -15,7 +15,7 @@ from mpc.mpc import construct_MPC_problem, solve_MPC_problem
 from mpc.obstacle_constraints import hypersphere_sdf
 from mpc.simulator import simulate_barriernet
 
-from cbf.nn import PolicyCloningModel
+from cbf.nn_grad import PolicyCloningModel
 from cvxpylayers.torch import CvxpyLayer
 
 # -------------------------------------------
@@ -38,6 +38,8 @@ control_bounds = [(-1, 1),
 torch.set_default_dtype(torch.float64)
 # -------- Define Number of cbf and clf constraints --------
 n_cbf = 1  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
+distance_cbf = lambda x, x_obst, radius: (x[0] - x_obst[0])**2 + (x[1] - x_obst[1]) ** 2 - radius ** 2
+cbf = [distance_cbf]
 n_cbf_slack = 1  # Number of CBF slack variables
 cbf_slack_weight = [1000.]
 rel_degree = [2]  # Relative degree of the CBFs [distance, v_min, v_max]
@@ -128,58 +130,12 @@ def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
     return mpc_expert
 
 
-def compute_parameters_hocbf(u_ref: torch.Tensor, cbf_rates: torch.Tensor, x: torch.Tensor, x_obst: torch.Tensor,
-                             r_obst: torch.Tensor, n_controls: int, n_cbf: int,
-                             rel_degree: List[int], device: torch.device = torch.device("cpu")):
-    """ Compute constraint parameters for the CLF and CBF """
-    # Housekeeping
-    # Make sure that the list of relative degrees is correct
-    if len(rel_degree) != n_cbf:
-        raise "Error: the number of relative degrees must be equal to the number of CBFs"
-    # Extract vehicle state
-    px, py, v, theta = x[:, 0], x[:, 1], x[:, 2], x[:, 3]
-    # -------- Extract Parameters from NN --------
-    # Compute the total number of cbf rates corresponding to the relative degree
-    n_cbf_rates = sum(rel_degree)
-    # -------- Compute CLF and CBF Constraint Parameters --------
-    # Compute CBF parameters
-    A_cbf = torch.zeros(n_cbf, n_controls).repeat(x.shape[0], 1, 1).to(device)
-    b_cbf = torch.zeros(n_cbf, 1).repeat(x.shape[0], 1, 1).to(device)
-    # Distance from Obstacle
-    x_obst = torch.atleast_2d(x_obst)
-    for i in range(len(x_obst)):
-        p1, p2 = cbf_rates[:,i * 2],cbf_rates[:,i * 2+1]
-        b_dist = (px - x_obst[i, 0]) ** 2 + (py - x_obst[i, 1]) ** 2 - r_obst[i] ** 2
-        LgLfb_dist = torch.vstack(
-            [2 * torch.cos(theta) * (px - x_obst[i, 0]) + 2 * torch.sin(theta) * (py - x_obst[i, 1]),
-             2 * v * torch.cos(theta) * (py - x_obst[i, 1]) - 2 * v * torch.sin(theta) *
-             (px - x_obst[i, 0])])
-        Lfb_dist = 2 * (px - x_obst[i, 0]) * v * torch.cos(theta) + \
-                   2 * (py - x_obst[i, 1]) * v * torch.sin(theta)
-        Lf2b_dist = 2 * v ** 2
-        A_cbf[i::len(x_obst), i, :n_controls] = -LgLfb_dist.T
-        b_cbf[i::len(x_obst), i, :] = torch.reshape(Lf2b_dist + (p1 + p2) * Lfb_dist + p1 * p2 * b_dist, (len(x), 1))
-    # Velocity Bounds barrier
-    # b_v = torch.vstack([v - 0.1, 2. - v])
-    # LgLfb_v = torch.vstack([torch.ones_like(v), -torch.ones_like(v)])
-    # n_dist = len(x_obst)
-    # cbf_rates_v = cbf_rates[sum(rel_degree[:n_dist]):]
-    #
-    # A_cbf[n_dist::len(x_obst)+2, n_dist, :n_controls] = -LgLfb_v.T
-
-    return u_ref, A_cbf, b_cbf
-
-
 def clone_dubins_barrier_preferences(train=True, load=False):
     # Define Barrier Function
     x_obstacle = torch.tensor([center]).to(device)
     x_g = torch.tensor(x_goal).to(device)
     r_obstacle = torch.tensor([radius + margin]).to(device)
 
-    process_barrier_inputs = lambda x_state, u_ref, cbf_rates: compute_parameters_hocbf(u_ref, cbf_rates,
-                                                                                        x_state, x_g,
-                                                                                        r_obstacle, n_controls,
-                                                                                        n_cbf, rel_degree, device)
     # -------------------------------------------
     # Clone the MPC policy
     # -------------------------------------------
@@ -193,13 +149,14 @@ def clone_dubins_barrier_preferences(train=True, load=False):
         n_state_dims=n_states,
         n_control_dims=n_controls,
         n_input_dims=n_states + len(x_obstacle[0]) + len(x_g),
-        n_cbf=n_cbf,  # Ordered list of Barrier functions
+        cbf= cbf,  # Ordered list of Barrier functions
         n_cbf_slack=n_cbf_slack,
         cbf_slack_weight=cbf_slack_weight,
         cbf_rel_degree=rel_degree,
         state_space=state_space,
         control_bounds=control_bounds,
-        preprocess_barrier_input_fn=process_barrier_inputs
+        x_obst= x_obstacle,
+        r_obst= r_obstacle,
     )
 
     n_pts = int(0.1e4)
@@ -250,7 +207,7 @@ def simulate_and_plot(policy):
     x_obstacle = torch.tensor([center]).to(device)
     x_g = torch.tensor(x_goal).to(device)
 
-    policy_fn = lambda x_state: policy.eval_np(x_state, x_obstacle.squeeze(), x_g.squeeze())
+    policy_fn = lambda x_state: policy.eval_np(x_state, x_obstacle.squeeze(), x_g.squeeze())[0]
     n_steps = 100
     for x0 in x0s:
         # Run the cloned policy

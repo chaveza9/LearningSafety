@@ -106,6 +106,8 @@ class CLFBarrierNetLayer(torch.nn.Module):
         p_weights = p_weights.reshape(-1)
         clf_rates = p_weights[:self.n_clf]
         cbf_rates = p_weights[self.n_clf:]
+        u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, cbf_rates, clf_rates),
+                           solver_args=self.solver_opts)[0]
         try:
             u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, cbf_rates, clf_rates),
                                solver_args=self.solver_opts)[0]
@@ -242,8 +244,8 @@ class BarrierNetLayer(nn.Module):
         else:
             u_ref = u_ref.reshape((self.n_control_dims, 1)).to(self.device)
         # Compute the CBF constraints
-        # u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, cbf_rates),
-        #                    solver_args=self.solver_opts)[0]
+        u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, cbf_rates),
+                           solver_args=self.solver_opts)[0]
         try:
             u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, cbf_rates),
                                solver_args=self.solver_opts)[0]
