@@ -15,7 +15,7 @@ from mpc.mpc import construct_MPC_problem, solve_MPC_problem
 from mpc.obstacle_constraints import hypersphere_sdf
 from mpc.simulator import simulate_barriernet
 
-from cbf.nn_monotonic import PolicyCloningModel
+from cbf.classknn import PolicyCloningModel
 from cvxpylayers.torch import CvxpyLayer
 
 # -------------------------------------------
@@ -148,7 +148,7 @@ def clone_dubins_barrier_preferences(train=True, load=False):
         hidden_layer_width=hidden_layer_width,
         n_state_dims=n_states,
         n_control_dims=n_controls,
-        n_input_dims=n_states + len(x_obstacle[0]) + len(x_g),
+        n_input_dims=n_states,
         cbf= cbf,  # Ordered list of Barrier functions
         n_cbf_slack=n_cbf_slack,
         cbf_slack_weight=cbf_slack_weight,
@@ -207,7 +207,7 @@ def simulate_and_plot(policy):
     x_obstacle = torch.tensor([center]).to(device)
     x_g = torch.tensor(x_goal).to(device)
 
-    policy_fn = lambda x_state: policy.eval_np(x_state, x_obstacle.squeeze(), x_g.squeeze())
+    policy_fn = policy.eval_np
     n_steps = 100
     for x0 in x0s:
         # Run the cloned policy
