@@ -187,7 +187,6 @@ class BarrierNetLayer(nn.Module):
         cbf_rel_degree: List[int],
         control_bounds: List[Tuple[float, float]],
         cbf_slack_weight: Optional[List[float]] = None,
-        preprocess_input_fn: Optional[Callable[[torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor]] = None,
         device: torch.device = torch.device("cpu"),
         solver_opts: Dict[str, Any] = {"solve_method": "ECOS", "verbose": False, "max_iters": 50000000},
         verbose: bool = True,
@@ -224,7 +223,6 @@ class BarrierNetLayer(nn.Module):
 
         self.cbf_rel_degree = cbf_rel_degree
         # Define the function to preprocess the parameters for the HOCBF constraints
-        self.preprocess_hocbf_params_fn = preprocess_input_fn
         # Define the device
         self.device = device
         # ------------------- Construct Policy Network -------------------#
@@ -235,25 +233,36 @@ class BarrierNetLayer(nn.Module):
         self.cbf_layer = self._define_hocbf_filter(weights)
         self.solver_opts = solver_opts
 
-    def forward(self, x_state: torch.Tensor, u_ref: torch.Tensor, cbf_rates: torch.Tensor) -> torch.Tensor:
+    def forward(self, u_ref, A_cbf, b_cbf) -> torch.Tensor:
         """ Forward pass of the policy network."""
         # Get the control input from the CvxpyLayer
         # Deconstruct the weights (CLF rates always come first)
-        if x_state.shape[0] > 1:
-            u_ref = u_ref.reshape((x_state.shape[0],self.n_control_dims,1)).to(self.device)
-        else:
-            u_ref = u_ref.reshape((self.n_control_dims, 1)).to(self.device)
-        # Compute the CBF constraints
-        u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, cbf_rates),
-                           solver_args=self.solver_opts)[0]
         try:
-            u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, cbf_rates),
-                               solver_args=self.solver_opts)[0]
+            u = self.cbf_layer(u_ref, A_cbf, b_cbf, solver_args=self.solver_opts)[0]
         except Exception as e:
             if self.verbose:
                 print("Error: {}\n".format(e))
             u = u_ref
         return u
+    # def forward(self, x_state: torch.Tensor, u_ref: torch.Tensor, cbf_rates: torch.Tensor) -> torch.Tensor:
+    #     """ Forward pass of the policy network."""
+    #     # Get the control input from the CvxpyLayer
+    #     # Deconstruct the weights (CLF rates always come first)
+    #     if x_state.shape[0] > 1:
+    #         u_ref = u_ref.reshape((x_state.shape[0],self.n_control_dims,1)).to(self.device)
+    #     else:
+    #         u_ref = u_ref.reshape((self.n_control_dims, 1)).to(self.device)
+    #     # Compute the CBF constraints
+    #     # u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, cbf_rates),
+    #     #                    solver_args=self.solver_opts)[0]
+    #     try:
+    #         u = self.cbf_layer(*self.preprocess_hocbf_params_fn(x_state, u_ref, cbf_rates),
+    #                            solver_args=self.solver_opts)[0]
+    #     except Exception as e:
+    #         if self.verbose:
+    #             print("Error: {}\n".format(e))
+    #         u = u_ref
+    #     return u
 
     def _define_hocbf_filter(self, slack_weights: Optional[List] = None) -> CvxpyLayer:
         """ Defines a differential cvxpy layer that contains a HOCBF filter together with a CLF controller."""
