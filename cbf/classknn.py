@@ -144,7 +144,7 @@ class PolicyCloningModel(torch.nn.Module):
         # pass state through policy network
         u_hat = self.policy_nn(x)
         # pass state through cbf network
-        return self.barrier_layer(*self.compute_hocbf_params(x, u_hat)).detach().cpu().squeeze()
+        return self.barrier_layer(*self.pass_barriernet_params(x, u_hat)).detach().cpu().squeeze()
 
     def _f(self, x):
         """Open Loop Dynamics"""
@@ -161,13 +161,29 @@ class PolicyCloningModel(torch.nn.Module):
         # Compute CBF parameters
         A_cbf = torch.zeros(self.n_cbf, self.n_control_dims).repeat(x.shape[0], 1, 1).to(self.device)
         b_cbf = torch.zeros(self.n_cbf, 1).repeat(x.shape[0], 1, 1).to(self.device)
+        psi_n = torch.zeros(self.n_cbf, 1).repeat(x.shape[0], 1, 1).to(self.device)
         # Distance from Obstacle
         cbf = lambda x: self.cbf[0](x, self.x_obst.reshape(-1), self.r_obst)
 
         for i in range(x.shape[0]):
             alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
             alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
-            A_i, b_i = self._compute_lie_derivative(x[i], cbf, alpha_1, alpha_2)
+            A_i, b_i, psi_n[i] = self._compute_lie_derivative(x[i], cbf, alpha_1, alpha_2)
+            A_cbf[i] = -A_i
+            b_cbf[i] = b_i
+        return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf, psi_n
+    
+    def pass_barriernet_params(self, x: torch.Tensor, u_ref: torch.Tensor):
+        # Compute CBF parameters
+        A_cbf = torch.zeros(self.n_cbf, self.n_control_dims).repeat(x.shape[0], 1, 1).to(self.device)
+        b_cbf = torch.zeros(self.n_cbf, 1).repeat(x.shape[0], 1, 1).to(self.device)
+        # Distance from Obstacle
+        cbf = lambda x: self.cbf[0](x, self.x_obst.reshape(-1), self.r_obst)
+
+        for i in range(x.shape[0]):
+            alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
+            alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
+            A_i, b_i, _ = self._compute_lie_derivative(x[i], cbf, alpha_1, alpha_2)
             A_cbf[i] = -A_i
             b_cbf[i] = b_i
         return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
@@ -188,12 +204,12 @@ class PolicyCloningModel(torch.nn.Module):
         psi1_dot = torch.autograd.grad(psi1, x, retain_graph=True)[0] @ self._f(x)
         psi2 = psi1_dot + alpha_fun_2(psi1)
         # Compute the Lie derivative
-        return LgLfb, Lf2b + psi2
+        return LgLfb, Lf2b + psi2, psi1
 
     def _barrier_loss(self, x_train, u_train, cbf_params,batch_size):
         """Compute the barrier loss"""
         # Compute the CBF parameters
-        _, A_cbf, b_cbf = cbf_params
+        _, A_cbf, b_cbf, psi_n_1 = cbf_params
         LgLfb = -A_cbf
         # Compute the barrier loss
         loss = 0
@@ -203,7 +219,12 @@ class PolicyCloningModel(torch.nn.Module):
             # constraint violation
             loss += beta1*torch.sum(torch.relu(-(LgLfb[:, i, :] * u_train + b_cbf[:, i, :])))
             # constraint satisfaction
-            loss += -beta2*torch.sum(torch.relu(torch.tanh(LgLfb[:, i, :] * u_train + b_cbf[:, i, :])))
+            loss += beta2*torch.sum(torch.relu(torch.tanh(LgLfb[:, i, :] * u_train + b_cbf[:, i, :])))
+            # violation
+            loss += beta1*torch.sum(torch.relu(-(psi_n_1[:, i, :])))
+            # saturation
+            loss += beta2*torch.sum(torch.relu(torch.tanh(psi_n_1[:, i, :])))
+            
         return loss/batch_size
 
 

@@ -160,7 +160,7 @@ def clone_dubins_barrier_preferences(train=True, load=False):
     )
 
     n_pts = int(1e4)
-    n_epochs = 200
+    n_epochs = 400
     learning_rate = 0.001
     path = "/workspaces/learning_safety/cloned_monotonic_barrier.pt"
     # Define Training optimizer
@@ -246,9 +246,9 @@ def simulate_and_plot(policy):
 
     ax.legend()
 
-    plt.show()
+    plt.savefig('comparison_run.png')
 
 
 if __name__ == "__main__":
-    policy = clone_dubins_barrier_preferences(train=True, load=True)
+    policy = clone_dubins_barrier_preferences(train=False, load=True)
     simulate_and_plot(policy)
