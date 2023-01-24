@@ -1,3 +1,4 @@
+LICENSE
 README.md
 setup.cfg
 setup.py
@@ -13,6 +14,13 @@ NNet/utils/__init__.py
 NNet/utils/normalizeNNet.py
 NNet/utils/readNNet.py
 NNet/utils/writeNNet.py
+cbf/__init__.py
+cbf/barriernet.py
+cbf/classknn.py
+cbf/mlpbarriernet.py
+cbf/nn.py
+cbf/nn_grad.py
+cbf/nn_monotonic.py
 mpc/__init__.py
 mpc/costs.py
 mpc/dynamics_constraints.py

@@ -8,8 +8,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 from .barriernet import BarrierNetLayer
-from UMNN.models.UMNN import MonotonicNN
-
 from tqdm import tqdm
 
 
@@ -31,15 +29,14 @@ class PolicyCloningModel(torch.nn.Module):
             n_state_dims: int,
             n_control_dims: int,
             n_input_dims: int,
-            cbf: List[Callable[[torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor]],
-            # Ordered list of Barrier functions
+            n_cbf: int,  # Ordered list of Barrier functions
             n_cbf_slack: int,
             cbf_rel_degree: List[int],
             state_space: List[Tuple[float, float]],
             control_bounds: List[Tuple[float, float]],
-            x_obst: torch.Tensor,
-            r_obst: torch.Tensor,
             cbf_slack_weight: Optional[List[float]] = None,
+            preprocess_barrier_input_fn: Optional[Callable[[torch.Tensor, torch.Tensor, torch.Tensor], Tuple[
+                torch.Tensor]]] = None,
             load_from_file: Optional[str] = None,
     ):
         """
@@ -51,7 +48,7 @@ class PolicyCloningModel(torch.nn.Module):
             n_state_dims: how many input state dimensions
             n_control_dims: how many output control dimensions
             n_input_dims: how many input dimensions to the barrier net (can be different from state dims with at least n_state_dims)
-            cbf: List of barrier functions (in order)
+            n_cbf: number of barrier functions
             n_cbf_slack: number of CBF slack variables (can be 0)
             cbf_slack_weight: weight for the slack variables for CBF constraints (must be a list of length n_cbf_slack)
             cbf_rel_degree: relative degree of the barrier functions (must be a list of length n_cbfs)
@@ -80,7 +77,7 @@ class PolicyCloningModel(torch.nn.Module):
 
         # ----------------- Construct MLP Network -----------------
         # Compute the output dimension of the MLP
-        self.n_output_dims = n_control_dims + sum(cbf_rel_degree)
+        self.n_output_dims = n_control_dims+sum(cbf_rel_degree)
         self.policy_layers: OrderedDict[str, nn.Module] = OrderedDict()
         self.policy_layers["input_linear"] = nn.Linear(
             self.n_input_dims,
@@ -94,29 +91,21 @@ class PolicyCloningModel(torch.nn.Module):
             self.policy_layers[f"layer_{i}_activation"] = nn.Softplus()
         # Output the penalty parameters for cbf
         self.policy_layers["output_linear"] = nn.Linear(
-            self.hidden_layer_width, self.n_control_dims
+            self.hidden_layer_width, self.n_output_dims
         )
         # Convert to sequential model
         self.policy_nn = nn.Sequential(self.policy_layers).to(self.device)
 
-        # ----------------- Construct CBF Network -----------------
-        # Monotonically increasing neural network for relative degree 2
-        self.mono1 = MonotonicNN(self.n_state_dims+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device)
-        self.mono2 = MonotonicNN(self.n_state_dims+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device)
-
-        self.n_cbf = len(cbf)
-        self.cbf = cbf
-        self.x_obst = x_obst.to(self.device)
-        self.r_obst = r_obst.to(self.device)
         # ----------------- Construct Barrier Network -----------------
         self.barrier_layer = BarrierNetLayer(
             n_state_dims=self.n_state_dims,
             n_control_dims=self.n_control_dims,
-            n_cbf=self.n_cbf,
+            n_cbf=n_cbf,
             n_cbf_slack=n_cbf_slack,
             cbf_slack_weight=cbf_slack_weight,
             cbf_rel_degree=cbf_rel_degree,
             control_bounds=control_bounds,
+            preprocess_input_fn=preprocess_barrier_input_fn,
             device=self.device,
         )
 
@@ -128,84 +117,44 @@ class PolicyCloningModel(torch.nn.Module):
         except:
             warnings.warn("Failed to load model from file")
 
-    def forward(self, x: torch.Tensor, u: torch.Tensor):
+    def forward(self, x: torch.Tensor, x_obs: Optional[torch.Tensor], x_des: Optional[torch.Tensor]):
         # Construct the input to the barrier net
-        x = torch.atleast_2d(x).to(self.device)
-        u = torch.atleast_2d(u).to(self.device)
+        x = torch.atleast_2d(x)
+        if x_obs is not None and x_des is not None:
+            x_obs = x_obs.repeat(x.shape[0],1)
+            x_des = x_des.repeat(x.shape[0],1)
+            x_in = torch.hstack([x, x_obs, x_des]).to(self.device)
+        elif x_obs is not None and x_des is None:
+            x_obs = x_obs.repeat(x.shape[0],1)
+            x_in = torch.hstack([x, x_obs]).to(self.device)
+        else:
+            x_in = x.to(self.device)
         # pass state through policy network
-        u_hat = self.policy_nn(x)
-        # pass state through cbf network
-        return u_hat, self.compute_hocbf_params(x, u)
+        u_out = self.policy_nn(x_in)
+        u_ref = u_out[:, :self.n_control_dims]
+        cbf_rates = u_out[:, self.n_control_dims:]
+        # pass state and penalty parameters through barrier net
+        return self.barrier_layer(x.to(self.device), u_ref, cbf_rates)
 
-    def eval_np(self, x: np.ndarray):
+    def eval_np(self, x: np.ndarray, x_obs: Optional[np.ndarray] = None, x_des: Optional[np.ndarray] = None):
         # Construct the input to the barrier net
 
         x = torch.atleast_2d(torch.from_numpy(x)).to(self.device)
-        # pass state through policy network
-        u_hat = self.policy_nn(x)
-        # pass state through cbf network
-        return self.barrier_layer(*self.compute_hocbf_params(x, u_hat)).detach().cpu().squeeze()
+        if x_obs is not None and x_des is not None:
+            x_obs = x_obs.repeat(x.shape[0], 1).to(self.device)
+            x_des = x_des.repeat(x.shape[0], 1).to(self.device)
+            x_in = torch.hstack([x, x_obs, x_des]).to(self.device)
+        elif x_obs is not None and x_des is None:
+            x_obs = x_obs.repeat(x.shape[0], 1).to(self.device)
+            x_in = torch.hstack([x, x_obs]).to(self.device)
+        else:
+            x_in = x.to(self.device)
 
-    def _f(self, x):
-        """Open Loop Dynamics"""
-        return torch.vstack([x[2] * torch.cos(x[3]), x[2] * torch.sin(x[3]), torch.zeros(2, 1).to(self.device)])
-
-    def _g(self):
-        """ Control Matrix"""
-        return torch.vstack([torch.zeros(2, 2).to(self.device), torch.eye(2).to(self.device)])
-
-    def _distance_to_obstacle(self, x):
-        return (x[:, 0] - self.x_obst[0])**2 + (x[:, 1] - self.x_obst[1]) ** 2 - self.r_obst ** 2
-
-    def compute_hocbf_params(self, x: torch.Tensor, u_ref: torch.Tensor):
-        # Compute CBF parameters
-        A_cbf = torch.zeros(self.n_cbf, self.n_control_dims).repeat(x.shape[0], 1, 1).to(self.device)
-        b_cbf = torch.zeros(self.n_cbf, 1).repeat(x.shape[0], 1, 1).to(self.device)
-        # Distance from Obstacle
-        cbf = lambda x: self.cbf[0](x, self.x_obst.reshape(-1), self.r_obst)
-
-        for i in range(x.shape[0]):
-            alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
-            alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
-            A_i, b_i = self._compute_lie_derivative(x[i], cbf, alpha_1, alpha_2)
-            A_cbf[i] = -A_i
-            b_cbf[i] = b_i
-        return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
-
-    def _compute_lie_derivative(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
-                                alpha_fun_2: Callable):
-        """Compute the Lie derivative of the CBF wrt the dynamics"""
-        # Make sure the input requires gradient
-        x.requires_grad_(True)
-        # Compute the CBF
-        psi0 = barrier_fun(x)
-        db_dx = torch.autograd.grad(psi0, x, create_graph=True, retain_graph=True)[0]
-        Lfb = db_dx @ self._f(x)
-        db2_dx = torch.autograd.grad(Lfb, x, retain_graph=True)[0]
-        Lf2b = db2_dx @ self._f(x)
-        LgLfb = db2_dx @ self._g()
-        psi1 = Lfb + alpha_fun_1(psi0)
-        psi1_dot = torch.autograd.grad(psi1, x, retain_graph=True)[0] @ self._f(x)
-        psi2 = psi1_dot + alpha_fun_2(psi1)
-        # Compute the Lie derivative
-        return LgLfb, Lf2b + psi2
-
-    def _barrier_loss(self, x_train, u_train, cbf_params,batch_size):
-        """Compute the barrier loss"""
-        # Compute the CBF parameters
-        _, A_cbf, b_cbf = cbf_params
-        LgLfb = -A_cbf
-        # Compute the barrier loss
-        loss = 0
-        beta1 = 1
-        beta2 = 0.001
-        for i in range(self.n_cbf):
-            # constraint violation
-            loss += beta1*torch.sum(torch.relu(-(LgLfb[:, i, :] * u_train + b_cbf[:, i, :])))
-            # constraint satisfaction
-            loss += -beta2*torch.sum(torch.relu(torch.tanh(LgLfb[:, i, :] * u_train + b_cbf[:, i, :])))
-        return loss/batch_size
-
+        u_out = self.policy_nn(x_in)
+        u_ref = u_out[:, :self.n_control_dims]
+        cbf_rates = u_out[:, self.n_control_dims:]
+        # pass state and penalty parameters through barrier net
+        return self.barrier_layer(x.to(self.device), u_ref, cbf_rates).detach().cpu().squeeze()
 
     def save_to_file(self, save_path: str):
         save_data = {
@@ -287,19 +236,15 @@ class PolicyCloningModel(torch.nn.Module):
                 u_expert_batch = u_expert[batch_indices]
 
                 # Forward pass: predict the control input
-                u_hat, cbf_params = self(x_batch, u_expert_batch)
+                u_predicted = self(x_batch, x_obs.squeeze(), x_des.squeeze()).squeeze().to(self.device)
                 # Compute the loss and backpropagate
-                # MSE Loss
-                # Clone Loss
-                # loss = mse_loss_fn(u_ref_predicted.squeeze(), u_expert_batch)
-                loss = mse_loss_fn(u_hat.squeeze(), u_expert_batch)
-                # CBF Loss
-                loss += self._barrier_loss(x_batch, u_expert_batch, cbf_params, batch_size)
+                loss = mse_loss_fn(u_predicted, u_expert_batch)
+
                 # Add L1 regularization
                 for layer in self.policy_nn:
                     if not hasattr(layer, "weight"):
                         continue
-                    loss += 0.001 * learning_rate * torch.norm(layer.weight, p=2)
+                    loss += 0.001 * learning_rate * torch.norm(layer.weight, p=1)
 
                 optimizer.zero_grad()
                 loss.backward()

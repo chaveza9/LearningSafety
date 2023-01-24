@@ -198,7 +198,7 @@ class PolicyCloningModel(torch.nn.Module):
         # Compute the barrier loss
         loss = 0
         beta1 = 1
-        beta2 = 0.001
+        beta2 = 0.01
         for i in range(self.n_cbf):
             # constraint violation
             loss += beta1*torch.sum(torch.relu(-(LgLfb[:, i, :] * u_train + b_cbf[:, i, :])))

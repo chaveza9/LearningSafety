@@ -5,4 +5,10 @@ Summary: Simple nonlinear MPC for obstacle avoidance
 Home-page: https://github.com/dawsonc/obstacle_avoidance_mpc
 Author: Charles Dawson
 Author-email: cbd@mit.edu
+License: UNKNOWN
+Platform: UNKNOWN
 Provides-Extra: dev
+License-File: LICENSE
+
+UNKNOWN
+
