@@ -28,7 +28,7 @@ dt = 0.1
 # -------- Define Vehicle Dynamics --------
 dynamics_fn = dubins_car_dynamics
 # Define limits for state space
-state_space = [(-3, 3),
+state_space = [(-2.5, 1),
                (-2, 2),
                (0, 2),
                (-np.pi, np.pi)]
@@ -162,7 +162,10 @@ def clone_dubins_barrier_preferences(train=True, load=False):
     n_pts = int(1e4)
     n_epochs = 400
     learning_rate = 0.001
-    path = "/workspaces/learning_safety/cloned_monotonic_barrier.pt"
+    # Extract current folder
+    dir = os.path.dirname(__file__)
+    file = "data/cloned_monotonic_barrier.pt"
+    path = os.path.join(dir, file)
     # Define Training optimizer
     if train and not load:
         cloned_policy.clone(
@@ -250,5 +253,5 @@ def simulate_and_plot(policy):
 
 
 if __name__ == "__main__":
-    policy = clone_dubins_barrier_preferences(train=False, load=True)
+    policy = clone_dubins_barrier_preferences(train=True, load=True)
     simulate_and_plot(policy)

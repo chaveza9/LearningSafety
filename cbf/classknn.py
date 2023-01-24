@@ -168,7 +168,7 @@ class PolicyCloningModel(torch.nn.Module):
         for i in range(x.shape[0]):
             alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
             alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
-            A_i, b_i, psi_n[i] = self._compute_lie_derivative(x[i], cbf, alpha_1, alpha_2)
+            A_i, b_i, psi_n[i] = self._compute_lie_derivative_2nd_order(x[i], cbf, alpha_1, alpha_2)
             A_cbf[i] = -A_i
             b_cbf[i] = b_i
         return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf, psi_n
@@ -177,19 +177,40 @@ class PolicyCloningModel(torch.nn.Module):
         # Compute CBF parameters
         A_cbf = torch.zeros(self.n_cbf, self.n_control_dims).repeat(x.shape[0], 1, 1).to(self.device)
         b_cbf = torch.zeros(self.n_cbf, 1).repeat(x.shape[0], 1, 1).to(self.device)
-        # Distance from Obstacle
-        cbf = lambda x: self.cbf[0](x, self.x_obst.reshape(-1), self.r_obst)
-
+        # Iterate over each cbf over each state            
         for i in range(x.shape[0]):
-            alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
-            alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
-            A_i, b_i, _ = self._compute_lie_derivative(x[i], cbf, alpha_1, alpha_2)
-            A_cbf[i] = -A_i
-            b_cbf[i] = b_i
+            for idx, cbf in enumerate(self.cbf):
+                # check relative degree of cbf
+                if self.cbf_rel_degree[idx] == 2:    
+                    fun = lambda x: cbf(x, self.x_obst.reshape(-1), self.r_obst)
+                    alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
+                    alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(x[i]))
+                    A_i, b_i, _ = self._compute_lie_derivative_2nd_order(x[i], cbf, alpha_1, alpha_2)
+                    A_cbf[i] = -A_i
+                    b_cbf[i] = b_i
+                elif self.cbf_rel_degree[idx] == 1:
+                    fun = lambda x: cbf(x)
+                    A_i, b_i, _ = self._compute_lie_derivative_1st_order(x[i], fun, alpha_1, alpha_2)
+                    A_cbf[i] = -A_i
+                    b_cbf[i] = b_i
+                    
         return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
 
-    def _compute_lie_derivative(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
-                                alpha_fun_2: Callable):
+    def _compute_lie_derivative_2nd_order(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable):
+        """Compute the Lie derivative of the CBF wrt the dynamics"""
+        # Make sure the input requires gradient
+        x.requires_grad_(True)
+        # Compute the CBF
+        psi0 = barrier_fun(x)
+        db_dx = torch.autograd.grad(psi0, x, create_graph=True, retain_graph=True)[0]
+        Lfb = db_dx @ self._f(x)
+        Lgb = db_dx @ self._g()
+        psi1 = Lfb + alpha_fun_1(psi0)
+        
+        # Compute the Lie derivative
+        return Lgb, psi1
+    
+    def _compute_lie_derivative_2nd_order(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable, alpha_fun_2: Callable):
         """Compute the Lie derivative of the CBF wrt the dynamics"""
         # Make sure the input requires gradient
         x.requires_grad_(True)
