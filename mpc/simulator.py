@@ -162,6 +162,7 @@ def simulate_barriernet(
     dynamics_fn: DynamicsFunction,
     n_steps: int,
     substeps: int = 1,
+    x_goal: Optional[np.ndarray] = None,
 ):
     """
     Simulate a rollout of a neural controller
@@ -204,5 +205,13 @@ def simulate_barriernet(
                 x_next[i] = x_next[i] + dt / substeps * np.array(dx_dt[i])
 
         x[tstep + 1] = x_next
+        # Check if the goal is reached
+        if x_goal is not None:
+            if np.linalg.norm(x[tstep + 1][:2] - x_goal[:2]) < 0.1:
+                x = x[: tstep + 2]
+                u = u[: tstep + 1]
+                t = t[: tstep + 2]
+                break
 
     return t, x, u
+

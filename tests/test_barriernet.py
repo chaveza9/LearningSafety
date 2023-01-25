@@ -15,7 +15,7 @@ sys.path.append(os.path.abspath('..'))
 from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from mpc.simulator import simulate_barriernet
 
-from cbf.mlpbarriernet import MLPBarrierNet
+from Models.mlpbarriernet import MLPBarrierNet
 from cvxpylayers.torch import CvxpyLayer
 
 # -------------------------------------------

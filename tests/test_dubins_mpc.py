@@ -22,7 +22,7 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
     # -------------------------------------------
     n_states = 4
     n_controls = 2
-    horizon =10
+    horizon = 40
     dt = 0.1
 
     # Define dynamics
@@ -77,15 +77,16 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
 
 
 def run_and_plot_dubins_mpc():
-    x0s = [
-        np.array([-3.0, 0.0, 0.0, 0.0]),
-        np.array([-3.0, 0.1, 0.0, 0.0]),
-        np.array([-3.0, 0.2, 0.0, 0.0]),
-        np.array([-3.0, 0.5, 0.0, 0.0]),
-        np.array([-3.0, -0.1, 0.0, 0.0]),
-        np.array([-3.0, -0.2, 0.0, 0.0]),
-        np.array([-3.0, -0.5, 0.0, 0.0]),
-    ]
+    x0s = []
+    n_states = 4
+    state_space = [(-3, -1.5),
+                   (-1, 1),
+                   (0, 2),
+                   (-1.0472, 1.0472)]
+    for i in range(20):
+        x0s.append(np.zeros(n_states))
+        for dim in range(n_states - 1):
+            x0s[i][dim] = np.random.uniform(state_space[dim][0], state_space[dim][1])
 
     fig = plt.figure(figsize=plt.figaspect(1.0))
     ax = fig.add_subplot(1, 1, 1)
