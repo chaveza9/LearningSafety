@@ -63,8 +63,11 @@ def simulate_mpc(
     u_guess: Optional[np.ndarray] = None
 
     # Simulate
-    t_range = tqdm(range(n_steps - 1))
-    t_range.set_description("Simulating")  # type: ignore
+    if verbose:
+        t_range = tqdm(range(n_steps - 1))
+        t_range.set_description("Simulating")  # type: ignore
+    else:
+        t_range = range(n_steps - 1)
     for tstep in t_range:
         # Solve the MPC problem to get the next state
         success, u_current, x_guess, u_guess = solve_MPC_problem(
@@ -93,8 +96,8 @@ def simulate_mpc(
                 x_next[i] = x_next[i] + dt / substeps * np.array(dx_dt[i])
 
         x[tstep + 1] = x_next
-
-    print(f"{n_infeasible} infeasible steps")
+    if verbose:
+        print(f"{n_infeasible} infeasible steps")
 
     return t, x, u
 
@@ -163,6 +166,7 @@ def simulate_barriernet(
     n_steps: int,
     substeps: int = 1,
     x_goal: Optional[np.ndarray] = None,
+    verbose: bool = False,
 ):
     """
     Simulate a rollout of a neural controller
@@ -189,8 +193,11 @@ def simulate_barriernet(
     x[0] = x0
 
     # Simulate
-    t_range = tqdm(range(n_steps - 1))
-    t_range.set_description("Simulating")  # type: ignore
+    if verbose:
+        t_range = tqdm(range(n_steps - 1))
+        t_range.set_description("Simulating")  # type: ignore
+    else:
+        t_range = range(n_steps - 1)
     for tstep in t_range:
         # Solve the MPC problem to get the next state
         u_current = policy(x[tstep]).numpy()

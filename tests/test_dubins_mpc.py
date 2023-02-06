@@ -22,20 +22,20 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
     # -------------------------------------------
     n_states = 4
     n_controls = 2
-    horizon = 40
+    horizon = 80
     dt = 0.1
 
     # Define dynamics
     dynamics_fn = dubins_car_dynamics
 
     # Define obstacles
-    radius = 0.2
-    margin = 0.1
-    center = [-1.0, 0.0]
+    radius = 0.3
+    margin = 0.2
+    center = [0.0, 0.0]
     obstacle_fns = [(lambda x: hypersphere_sdf(x, radius, [0, 1], center), margin)]
 
     # Define costs
-    x_goal = np.array([0.0, 0.0, 0.5, 0.0])
+    x_goal = np.array([1.0, 0.0, 0.5, 0.0])
     running_cost_fn = lambda x, u: lqr_running_cost(
         x, u, x_goal, dt * np.diag([1.0, 1.0, 0.1, 0.0]), 0.01 * np.eye(2)
     )
@@ -43,7 +43,7 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
 
     # Define control bounds
     control_bounds = [(-1, 1),
-                      (-0.5, 0.5)]  # [m/s^2, rad/s]
+                      (-1, 1)]  # [m/s^2, rad/s]
 
     # Define MPC problem
     opti, x0_variables, u0_variables, x_variables, u_variables = construct_MPC_problem(
@@ -61,7 +61,7 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
     # -------------------------------------------
     # Simulate and return the results
     # -------------------------------------------
-    n_steps = 70
+    n_steps = 100
     return simulate_mpc(
         opti,
         x0_variables,
@@ -79,7 +79,7 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
 def run_and_plot_dubins_mpc():
     x0s = []
     n_states = 4
-    state_space = [(-3, -1.5),
+    state_space = [(-3, -0.5),
                    (-1, 1),
                    (0, 2),
                    (-1.0472, 1.0472)]
@@ -101,9 +101,9 @@ def run_and_plot_dubins_mpc():
         ax.plot(x[:, 0], x[:, 1], "r-")
 
     # Plot obstacle
-    radius = 0.2
-    margin = 0.1
-    center = [-1.0, 0.0]
+    radius = 0.3
+    margin = 0.2
+    center = [0.0, 0.0]
     theta = np.linspace(0, 2 * np.pi, 100)
     obs_x = radius * np.cos(theta) + center[0]
     obs_y = radius * np.sin(theta) + center[1]
@@ -115,7 +115,7 @@ def run_and_plot_dubins_mpc():
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
-    ax.set_xlim([-3.5, 0.5])
+    ax.set_xlim([-3.5, 2])
     ax.set_ylim([-1.0, 1.0])
 
     ax.set_aspect("equal")

@@ -16,7 +16,7 @@ from mpc.mpc import construct_MPC_problem, solve_MPC_problem
 from mpc.obstacle_constraints import hypersphere_sdf
 from mpc.simulator import simulate_barriernet, simulate_mpc
 
-from models.clone.classknn import ClassKNN as PolicyCloningModel
+from models.clone.mlpparameteric import ClassKNN as PolicyCloningModel
 
 
 # -------------------------------------------
@@ -39,12 +39,12 @@ control_bounds = [(-1, 1),
 torch.set_default_dtype(torch.float64)
 # -------- Define Number of cbf and clf constraints --------
 n_cbf = 1  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
-distance_cbf = lambda x, x_obst, radius: (x[0] - x_obst[0])**2 + (x[1] - x_obst[1]) ** 2 - radius ** 2
-v_min_cbf = lambda x: x[2] - 0.01
-v_max_cbf = lambda x: 2 - x[2]
+distance_cbf = lambda x, x_obst, radius: (x[:,0] - x_obst[0])**2 + (x[:,1] - x_obst[1]) ** 2 - radius ** 2
+v_min_cbf = lambda x: x[:,2] - 0.01
+v_max_cbf = lambda x: 2 - x[:,2]
 cbf = [distance_cbf, v_min_cbf, v_max_cbf]
-n_cbf_slack = 0#1 # Number of CBF slack variables
-cbf_slack_weight = [] #[1000.]
+n_cbf_slack = 0  # Number of CBF slack variables
+cbf_slack_weight = []#[1000.]
 rel_degree = [2,1,1]  # Relative degree of the CBFs [distance, v_min, v_max]
 # -------- Define obstacles --------
 radius = 0.2
@@ -174,8 +174,8 @@ def clone_dubins_barrier_preferences(train=True, path = None):
         load_from_file=path,
     )
 
-    n_pts = int(0.5e4)
-    n_epochs = 300
+    n_pts = int(2e4)
+    n_epochs = 500
     learning_rate = 0.001
 
     # Define Training optimizer
@@ -239,15 +239,15 @@ def simulate_and_plot(policy):
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
-    ax.set_xlim([-2.5, 0.5])
+    ax.set_xlim([-12.5, 0.5])
     ax.set_ylim([-1.0, 1.0])
     ax.title.set_text("Cloned Dubins Car Policy")
 
     ax.set_aspect("equal")
 
     ax.legend()
-    plt.show()
-    # plt.savefig('comparison_run.png')
+
+    plt.savefig('comparison_run.png')
 
 
 if __name__ == "__main__":
@@ -255,10 +255,9 @@ if __name__ == "__main__":
     dir = os.path.dirname(__file__)
     # Define a file with the current date
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\data\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pt"
+    file = "..\\data\\" + name + "_dubins_cloned_parametric_policy_v2.pt"
     path = os.path.join(dir, file)
-
-    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-01-31_19-10-09_dubins_cloned_monotonic_policy.pt"
+    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-02_11-25-10_dubins_cloned_parametric_policy_v2.pt"
     # Define the policy
     policy = clone_dubins_barrier_preferences(train=True, path= path)
     simulate_and_plot(policy)

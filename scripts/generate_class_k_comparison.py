@@ -6,9 +6,6 @@ import torch
 import matplotlib.pyplot as plt
 import sys
 import os
-import dill
-import cvxpy as cp
-import warnings
 
 sys.path.append(os.path.abspath('..'))
 
@@ -251,7 +248,7 @@ if __name__ == "__main__":
         p_weights_1, x_state, x_goal, x_obstacle,
         r_obstacle, n_controls, n_clf,
         n_cbf, cbf_rel_degree, alpha1, device)
-                                            ).detach().squeeze()
+                                            ).detach().squeeze().cpu()
     policies.append(policy1)
     # Policy 2 (Aggressive)
     p_weights_2 = torch.tensor([1., 1., 1, 1, 0.5, 10, 1., 1.]).to(device)
@@ -261,8 +258,8 @@ if __name__ == "__main__":
         p_weights_2, x_state, x_goal, x_obstacle,
         r_obstacle, n_controls, n_clf,
         n_cbf, cbf_rel_degree, alpha2, device)
-                                            ).detach().squeeze()
+                                            ).detach().squeeze().cpu()
     policies.append(policy2)
     # -------------------------------------------
     # Simulate and plot
-    simulate_and_plot(policies, x_goal.numpy(), center, radius, margin)
+    simulate_and_plot(policies, x_goal.cpu().numpy(), center, radius, margin)
