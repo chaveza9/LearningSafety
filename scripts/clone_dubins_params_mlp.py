@@ -47,9 +47,9 @@ n_cbf_slack = 0  # Number of CBF slack variables
 cbf_slack_weight = []#[1000.]
 rel_degree = [2,1,1]  # Relative degree of the CBFs [distance, v_min, v_max]
 # -------- Define obstacles --------
-radius = 0.2
+radius = 0.3
 margin = 0.1
-center = [-1.0, 0.0]
+center = [0.0, 0.0]
 # --------- Define Goal and Initial State ---------
 # Define initial states
 x0s = [
@@ -57,12 +57,12 @@ x0s = [
     np.array([-2.0, 0.1, 0.0, 0.0]),
     np.array([-2.0, 0.2, 0.0, 0.0]),
     np.array([-2.0, 0.5, 0.0, 0.0]),
-    np.array([-2.0, -0.1, 0.0, 0.0]),
+    np.array([-1.0, -0.1, 0.0, 0.0]),
     np.array([-2.0, -0.2, 0.0, 0.0]),
     np.array([-2.0, -0.5, 0.0, 0.0]),
 ]
 # Define goal state
-x_goal = np.array([0.0, 0.001, 0.5, 0.0])
+x_goal = np.array([1.5, 0.001, 0.5, 0.0])
 
 # -------------------------------------------
 # DEFINE DEVICE
@@ -174,8 +174,8 @@ def clone_dubins_barrier_preferences(train=True, path = None):
         load_from_file=path,
     )
 
-    n_pts = int(2e4)
-    n_epochs = 500
+    n_pts = int(0.7e4)
+    n_epochs = 1000
     learning_rate = 0.001
 
     # Define Training optimizer
@@ -239,15 +239,16 @@ def simulate_and_plot(policy):
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
-    ax.set_xlim([-12.5, 0.5])
+    ax.set_xlim([-3., 2.5])
     ax.set_ylim([-1.0, 1.0])
-    ax.title.set_text("Cloned Dubins Car Policy")
-
+    ax.title.set_text("Cloned Dubins Car Policy with Barrier Function MLP")
+    # Add a grid
+    ax.grid()
     ax.set_aspect("equal")
 
     ax.legend()
-
-    plt.savefig('comparison_run.png')
+    plt.show()
+    # plt.savefig('comparison_run.png')
 
 
 if __name__ == "__main__":
@@ -255,9 +256,9 @@ if __name__ == "__main__":
     dir = os.path.dirname(__file__)
     # Define a file with the current date
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\data\\" + name + "_dubins_cloned_parametric_policy_v2.pt"
+    file = "..\\data\\" + name + "_dubins_cloned_parametric_policy_with_qp.pt"
     path = os.path.join(dir, file)
-    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-02_11-25-10_dubins_cloned_parametric_policy_v2.pt"
+    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-07_19-06-00_dubins_cloned_parametric_policy_no_qp.pt"
     # Define the policy
     policy = clone_dubins_barrier_preferences(train=True, path= path)
     simulate_and_plot(policy)

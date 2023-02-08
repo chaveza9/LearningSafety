@@ -10,6 +10,7 @@ import numpy as np
 # Import local modules
 from models.hocbf.barriernet import BarrierNetLayer
 from models.UMNN import MonotonicNN
+from functorch import vmap, jacrev
 
 from tqdm import tqdm
 
@@ -138,6 +139,7 @@ class ClassKNN(torch.nn.Module):
         u_hat = out[:, : self.n_control_dims]
         cbf_params = out[:, self.n_control_dims:]
         # pass state through cbf network
+        # return u_hat.detach().cpu().squeeze()
         return self.barrier_layer(*self.compute_hocbf_params(x, u_hat, cbf_params)).detach().cpu().squeeze()
 
     def _f(self, x):
@@ -184,6 +186,21 @@ class ClassKNN(torch.nn.Module):
                 b_cbf[:, idx] =  torch.reshape(alpha_1(cbf(x)), (len(x), 1))
         return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
 
+    def _compute_lie_derivative_2nd_order_jacrev(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
+                                                 alpha_fun_2: Callable):
+        psi0 = barrier_fun(x)
+        Lfb = lambda x: jacrev(barrier_fun)(x) @ self._f(x)
+        db2_dx = jacrev(Lfb)(x)
+        Lf2b = db2_dx @ self._f(x)
+        LgLfb = db2_dx @ self._g()
+
+        psi1 = lambda x: Lfb(x) + alpha_fun_1(psi0)
+        psi1_dot = jacrev(psi1)(x) @ self._f(x)
+
+        psi2 = psi1_dot + alpha_fun_2(psi1(x))
+
+        return LgLfb, Lf2b + psi2, psi1(x)
+
     # def compute_hocbf_params(self, x: torch.Tensor, u_ref: torch.Tensor, cbf_params: torch.Tensor):
     #     # Compute CBF parameters
     #     A_cbf = torch.zeros(self.n_cbf, self.n_control_dims).repeat(x.shape[0], 1, 1).to(self.device)
@@ -211,7 +228,7 @@ class ClassKNN(torch.nn.Module):
     def _compute_lie_derivative_1st_order(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable):
         """Compute the Lie derivative of the CBF wrt the dynamics"""
         # Make sure the input requires gradient
-        x.requires_grad_(True)
+        # x.requires_grad_(True)
         # Compute the CBF
         psi0 = barrier_fun(x)
         db_dx = torch.autograd.grad(psi0, x, create_graph=True, retain_graph=True)[0]
@@ -226,7 +243,7 @@ class ClassKNN(torch.nn.Module):
                                           alpha_fun_2: Callable):
         """Compute the Lie derivative of the CBF wrt the dynamics"""
         # Make sure the input requires gradient
-        x.requires_grad_(True)
+        # x.requires_grad_(True)
         # Compute the CBF
         psi0 = barrier_fun(x)
         db_dx = torch.autograd.grad(psi0, x, create_graph=True, retain_graph=True)[0]
@@ -249,13 +266,14 @@ class ClassKNN(torch.nn.Module):
         loss = 0
         beta1 = 1
         beta2 = 0.001
+        gamma = 0
         # Reshape u to match the shape of the CBF parameters
         batch_size = u_train.shape[0]
         u_train = u_train.reshape((batch_size, self.n_control_dims, 1))
         # constraint violation
-        loss += beta1 * torch.sum(torch.relu(-(torch.bmm(LgLfb, u_train) + b_cbf)))
+        loss += beta1 * torch.sum(torch.relu(gamma-(torch.bmm(LgLfb, u_train) + b_cbf)))
         # constraint satisfaction
-        loss += -beta2 * torch.sum(torch.relu(torch.tanh(torch.bmm(LgLfb, u_train) + b_cbf)))
+        loss += beta2 * torch.sum(torch.relu(torch.tanh(torch.bmm(LgLfb, u_train) + b_cbf+gamma)))
         # # violation
         # loss += beta1*torch.sum(torch.relu(-psi_n_1))
         # # saturation
@@ -343,13 +361,13 @@ class ClassKNN(torch.nn.Module):
 
                 # Forward pass: predict the control input
                 u_hat, cbf_params = self(x_batch, u_expert_batch)
-                u_barrier = self.barrier_layer(*cbf_params)
+                u_hat = self.barrier_layer(*cbf_params)
                 # Compute the loss and backpropagate
                 # MSE Loss
                 # Clone Loss
-                loss = mse_loss_fn(u_barrier.squeeze(), u_expert_batch)
+                loss = 0.1*mse_loss_fn(u_hat.squeeze(), u_expert_batch)
                 # CBF Loss
-                # loss += self._barrier_loss(u_expert_batch, cbf_params)
+                loss += self._barrier_loss(u_hat, cbf_params)
                 # Add L1 regularization
                 for layer in self.policy_nn:
                     if not hasattr(layer, "weight"):

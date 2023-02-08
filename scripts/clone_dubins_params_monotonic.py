@@ -47,9 +47,9 @@ n_cbf_slack = 0#1 # Number of CBF slack variables
 cbf_slack_weight = [] #[1000.]
 rel_degree = [2,1,1]  # Relative degree of the CBFs [distance, v_min, v_max]
 # -------- Define obstacles --------
-radius = 0.2
+radius = 0.3
 margin = 0.1
-center = [-1.0, 0.0]
+center = [0.0, 0.0]
 # --------- Define Goal and Initial State ---------
 # Define initial states
 x0s = [
@@ -62,7 +62,7 @@ x0s = [
     np.array([-2.0, -0.5, 0.0, 0.0]),
 ]
 # Define goal state
-x_goal = np.array([0.0, 0.001, 0.5, 0.0])
+x_goal = np.array([1.5, 0.001, 0.5, 0.0])
 
 # -------------------------------------------
 # DEFINE DEVICE
@@ -174,8 +174,8 @@ def clone_dubins_barrier_preferences(train=True, path = None):
         load_from_file=path,
     )
 
-    n_pts = int(0.5e4)
-    n_epochs = 300
+    n_pts = int(0.7e4)
+    n_epochs = 500
     learning_rate = 0.001
 
     # Define Training optimizer
@@ -186,7 +186,7 @@ def clone_dubins_barrier_preferences(train=True, path = None):
             n_pts,
             n_epochs,
             learning_rate,
-            batch_size=128,
+            batch_size=64,
             save_path=path,
             load_checkpoint=checkpoint,
             x_des=x_g,
@@ -239,16 +239,20 @@ def simulate_and_plot(policy):
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
-    ax.set_xlim([-2.5, 0.5])
+    ax.set_xlim([-3., 2.5])
     ax.set_ylim([-1.0, 1.0])
-    ax.title.set_text("Cloned Dubins Car Policy")
-
+    ax.title.set_text("Cloned Dubins Car Policy with UMNN BarrierNet")
+    ax.grid()
     ax.set_aspect("equal")
 
     ax.legend()
+    # Save the figure in vector format using time stamp as name
+    dir = os.path.dirname(__file__)
+    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pdf"
+    path = os.path.join(dir, file)
+    plt.savefig(path)
     plt.show()
-    # plt.savefig('comparison_run.png')
-
 
 if __name__ == "__main__":
     # Extract current folder
@@ -258,7 +262,7 @@ if __name__ == "__main__":
     file = "..\\data\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pt"
     path = os.path.join(dir, file)
 
-    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-01-31_19-10-09_dubins_cloned_monotonic_policy.pt"
+    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-03_11-04-55_dubins_cloned_barriernet_monotonic_policy.pt"
     # Define the policy
     policy = clone_dubins_barrier_preferences(train=True, path= path)
     simulate_and_plot(policy)

@@ -3,14 +3,13 @@ from collections import OrderedDict
 from typing import Any, Callable, Dict, List, Tuple, Optional
 import warnings
 
-from cvxpylayers.torch import CvxpyLayer
 import torch
 import torch.nn as nn
 import numpy as np
 # Import local modules
 from models.hocbf.barriernet import BarrierNetLayer
 from models.UMNN import MonotonicNN
-
+from functorch import vmap, jacrev
 from tqdm import tqdm
 
 
@@ -128,7 +127,7 @@ class ClassKNN(torch.nn.Module):
         # pass state through policy network
         u_hat = self.policy_nn(x)
         # pass state through cbf network
-        return self.barrier_layer(*self.compute_hocbf_params(x, u_hat))
+        return u_hat, self.compute_hocbf_params(x, u)
 
     def eval_np(self, x: np.ndarray):
         # Construct the input to the barrier net
@@ -186,6 +185,21 @@ class ClassKNN(torch.nn.Module):
 
         # Compute the Lie derivative
         return Lgb, psi1
+
+    def _compute_lie_derivative_2nd_order_jacrev(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
+                                          alpha_fun_2: Callable):
+        psi0 = barrier_fun(x)
+        Lfb = lambda x: jacrev(barrier_fun)(x) @ self._f(x)
+        db2_dx = jacrev(Lfb)(x)
+        Lf2b = db2_dx @ self._f(x)
+        LgLfb = db2_dx @ self._g()
+
+        psi1 = lambda x: Lfb(x) + alpha_fun_1(psi0)
+        psi1_dot = jacrev(psi1)(x) @ self._f(x)
+
+        psi2 = psi1_dot + alpha_fun_2(psi1(x))
+
+        return LgLfb, Lf2b + psi2, psi1(x)
 
     def _compute_lie_derivative_2nd_order(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
                                           alpha_fun_2: Callable):
@@ -308,15 +322,12 @@ class ClassKNN(torch.nn.Module):
                 u_expert_batch = u_expert[batch_indices]
 
                 # Forward pass: predict the control input
-                u_hat = self(x_batch, u_expert_batch)
+                u_hat, cbf_params = self(x_batch, u_expert_batch)
                 # Compute the loss and backpropagate
                 # MSE Loss
                 # Clone Loss
-                loss = mse_loss_fn(u_hat.squeeze(), u_expert_batch)
+                loss = 0.1*mse_loss_fn(u_hat.squeeze(), u_expert_batch)
                 # CBF Loss
-                x = torch.atleast_2d(x_batch).to(self.device)
-                u = torch.atleast_2d(u_expert_batch).to(self.device)
-                cbf_params = self.compute_hocbf_params(x, u)
                 loss += self._barrier_loss(u_expert_batch, cbf_params)
                 # Add L1 regularization
                 for layer in self.policy_nn:
