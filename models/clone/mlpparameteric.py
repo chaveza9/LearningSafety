@@ -365,7 +365,7 @@ class ClassKNN(torch.nn.Module):
                 # Compute the loss and backpropagate
                 # MSE Loss
                 # Clone Loss
-                loss = 0.1*mse_loss_fn(u_hat.squeeze(), u_expert_batch)
+                loss = mse_loss_fn(u_hat.squeeze(), u_expert_batch)
                 # CBF Loss
                 loss += self._barrier_loss(u_hat, cbf_params)
                 # Add L1 regularization

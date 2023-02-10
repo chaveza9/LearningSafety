@@ -262,7 +262,7 @@ if __name__ == "__main__":
     file = "..\\data\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pt"
     path = os.path.join(dir, file)
 
-    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-03_11-04-55_dubins_cloned_barriernet_monotonic_policy.pt"
+    path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-09_11-15-11_dubins_cloned_barriernet_monotonic_policy.pt"
     # Define the policy
     policy = clone_dubins_barrier_preferences(train=True, path= path)
     simulate_and_plot(policy)
