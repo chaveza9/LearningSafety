@@ -7,9 +7,6 @@ import matplotlib.pyplot as plt
 import sys
 import os
 import copy
-
-
-sys.path.append(os.path.abspath('..'))
 from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from mpc.simulator import simulate_barriernet
 
@@ -253,9 +250,9 @@ if __name__ == "__main__":
     
     # CBF
     n_cbf = 3  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
-    n_cbf_slack = 1  # Number of CBF slack variables
+    n_cbf_slack = 0  # Number of CBF slack variables
     cbf_rel_degree = [2, 1, 1]
-    cbf_slack_weight = [1000]
+    # cbf_slack_weight = [1000]
     
     distance_cbf = {'type': 'distance',
                     'f': lambda x, x_obst, radius: (x[0] - x_obst[0,0]) ** 2 + (x[1] - x_obst[0,1]) ** 2 - radius ** 2,
@@ -291,7 +288,6 @@ if __name__ == "__main__":
         n_cbf_slack=n_cbf_slack,
         cbf_rel_degree=cbf_rel_degree,
         control_bounds=control_bounds,
-        cbf_slack_weight=cbf_slack_weight,
     )
     # -------------------------------------------
     # Policy (Aggressive)
@@ -319,11 +315,10 @@ if __name__ == "__main__":
     clf_slack_weight = [1., 1.]
     # CBF
     n_cbf = 3  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
-    n_cbf_slack = 1  # Number of CBF slack variables
+    n_cbf_slack = 0  # Number of CBF slack variables
     cbf_rel_degree = [1, 1, 1]
-    cbf_slack_weight = [1000]
     
-    cv = 1/6*torch.pi
+    cv = 1*torch.pi
     av_p = torch.tensor([0.21, 3.5]).to(device).requires_grad_(False)
     aV = lambda x, p: p[0]*x[3]**2+p[1]*(x[3]+cv)**2  
     distance_cbf_aV = {'type': 'distance_trans',
@@ -346,7 +341,6 @@ if __name__ == "__main__":
         n_cbf_slack=n_cbf_slack,
         cbf_rel_degree=cbf_rel_degree,
         control_bounds=control_bounds,
-        cbf_slack_weight=cbf_slack_weight,
     )
     
     # -------------------------------------------

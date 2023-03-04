@@ -98,7 +98,6 @@ def compute_parameters_clf_cbf(x: jnp.ndarray,
 
 # -------------------------------------------
 # DEFINE LIE DERIVATIVE AUTODIFF FUNCTIONS
-@partial(jax.jit, static_argnums=(0,))
 def _compute_lie_derivative_1st_order(x: jnp.ndarray, barrier_fun: Callable, alpha_fun_1: Callable):
     """Compute the Lie derivative of the CBF wrt the dynamics"""
     # Compute the CBF and its gradient
@@ -227,9 +226,9 @@ if __name__ == "__main__":
     # CBF
     n_cbf = 3  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
     cbf_rel_degree = [1, 1, 1]
-    cbf_slack_weight = [1000, 0, 0]
+    cbf_slack_weight = [0, 0, 0]
 
-    cv = 1 / 6 * jnp.pi
+    cv = 1* jnp.pi
     av_p = jnp.array([0.21, 3.5])
     aV = lambda x, p: p[0] * jnp.square(x[3]) + p[1] * jnp.square(x[3] + cv)
     distance_cbf = {'type': 'distance_trans',
