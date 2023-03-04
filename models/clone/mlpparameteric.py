@@ -127,7 +127,7 @@ class ClassKNN(torch.nn.Module):
         u_hat = out[:, : self.n_control_dims]
         cbf_params = out[:, self.n_control_dims :]
         # pass state through cbf network
-        return u_hat, self.compute_hocbf_params(x, u_hat, cbf_params)
+        return u_hat, self.compute_hocbf_params(x, u, cbf_params)
 
     def eval_np(self, x: np.ndarray):
         # Construct the input to the barrier net
@@ -361,11 +361,11 @@ class ClassKNN(torch.nn.Module):
 
                 # Forward pass: predict the control input
                 u_hat, cbf_params = self(x_batch, u_expert_batch)
-                u_hat = self.barrier_layer(*cbf_params)
+                # u_hat = self.barrier_layer(*cbf_params)
                 # Compute the loss and backpropagate
                 # MSE Loss
                 # Clone Loss
-                loss = mse_loss_fn(u_hat.squeeze(), u_expert_batch)
+                loss = 0.1*mse_loss_fn(u_hat.squeeze(), u_expert_batch)
                 # CBF Loss
                 loss += self._barrier_loss(u_hat, cbf_params)
                 # Add L1 regularization

@@ -63,11 +63,11 @@ def simulate_mpc(
     u_guess: Optional[np.ndarray] = None
 
     # Simulate
-    if verbose:
-        t_range = tqdm(range(n_steps - 1))
-        t_range.set_description("Simulating")  # type: ignore
-    else:
-        t_range = range(n_steps - 1)
+    # if verbose:
+    t_range = tqdm(range(n_steps - 1))
+    t_range.set_description("Simulating")  # type: ignore
+    # else:
+    #     t_range = range(n_steps - 1)
     for tstep in t_range:
         # Solve the MPC problem to get the next state
         success, u_current, x_guess, u_guess = solve_MPC_problem(
@@ -200,8 +200,8 @@ def simulate_barriernet(
         t_range = range(n_steps - 1)
     for tstep in t_range:
         # Solve the MPC problem to get the next state
-        u_current = policy(x[tstep]).numpy()
-        u[tstep] = u_current
+        u_current = policy(x[tstep])
+        u[tstep] = np.squeeze(u_current)
 
         # Update the state using the dynamics. Integrate at a higher frequency using
         # zero-order hold controls

@@ -24,7 +24,7 @@ class CLFBarrierNetLayer(torch.nn.Module):
         control_bounds: List[Tuple[float, float]],
         cbf_slack_weight: Optional[List[float]]= None,
         device: torch.device = torch.device("cpu"),
-        solver_opts: Dict[str, Any] = {"solve_method": "ECOS", "verbose": False, "max_iters": 50000000},
+        solver_opts: Dict[str, Any] = {"verbose": False, "max_iters": 50000000},
         verbose: bool = True,
     ):
         """

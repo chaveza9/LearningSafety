@@ -4,19 +4,27 @@ from typing import Callable, Tuple, List
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-import sys
-import os
+import datetime
+import os, sys
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.abspath('../'))
 
 from mpc.costs import lqr_running_cost, squared_error_terminal_cost
 from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from mpc.mpc import construct_MPC_problem, solve_MPC_problem
 from mpc.obstacle_constraints import hypersphere_sdf
-from mpc.simulator import simulate_barriernet
+from mpc.simulator import simulate_barriernet, simulate_mpc
 
-from Models.nn_monotonic import PolicyCloningModel
-from cvxpylayers.torch import CvxpyLayer
+from models.clone.classknn_v import ClassKNN as PolicyCloningModel
+
+
+# -------------------------------------------
+# DEFINE DEVICE
+# Define device
+if torch.cuda.is_available():
+    device = torch.device("cuda:0")
+else:
+    device = torch.device("cpu")
 
 # -------------------------------------------
 # PROBLEM PARAMETERS
@@ -28,7 +36,7 @@ dt = 0.1
 # -------- Define Vehicle Dynamics --------
 dynamics_fn = dubins_car_dynamics
 # Define limits for state space
-state_space = [(-3, 3),
+state_space = [(-3, -1),
                (-2, 2),
                (0, 2),
                (-np.pi, np.pi)]
@@ -38,15 +46,21 @@ control_bounds = [(-1, 1),
 torch.set_default_dtype(torch.float64)
 # -------- Define Number of cbf and clf constraints --------
 n_cbf = 1  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
-distance_cbf = lambda x, x_obst, radius: (x[0] - x_obst[0])**2 + (x[1] - x_obst[1]) ** 2 - radius ** 2
-cbf = [distance_cbf]
-n_cbf_slack = 1  # Number of CBF slack variables
-cbf_slack_weight = [1000.]
-rel_degree = [2]  # Relative degree of the CBFs [distance, v_min, v_max]
+torch.pi = torch.acos(torch.zeros(1)).item() * 2
+cv = 1/6*torch.pi
+av_p = torch.tensor([0.21, 3.5]).to(device).requires_grad_(False)
+aV = lambda x, p: p[0]*x[3]**2+p[1]*(x[3]+cv)**2  
+distance_cbf = lambda x, x_obst, radius: (x[0] - x_obst[0])**2 + (x[1] - x_obst[1]) ** 2 - radius ** 2 - aV(x, av_p)
+v_min_cbf = lambda x: x[2] - 0.01
+v_max_cbf = lambda x: 2 - x[2]
+cbf = [distance_cbf, v_min_cbf, v_max_cbf]
+n_cbf_slack = 0#1 # Number of CBF slack variables
+cbf_slack_weight = [] #[1000.]
+rel_degree = [1,1,1]  # Relative degree of the CBFs [distance, v_min, v_max]
 # -------- Define obstacles --------
-radius = 0.2
+radius = 0.3
 margin = 0.1
-center = [-1.0, 0.0]
+center = [0.0, 0.0]
 # --------- Define Goal and Initial State ---------
 # Define initial states
 x0s = [
@@ -57,32 +71,51 @@ x0s = [
     np.array([-2.0, -0.1, 0.0, 0.0]),
     np.array([-2.0, -0.2, 0.0, 0.0]),
     np.array([-2.0, -0.5, 0.0, 0.0]),
+    np.array([-1.0, 0, 0.0, 0.0]),
 ]
 # Define goal state
-x_goal = np.array([0.0, 0.001, 0.5, 0.0])
-
-# -------------------------------------------
-# DEFINE DEVICE
-# Define device
-if torch.cuda.is_available():
-    device = torch.device("cuda:0")
-else:
-    device = torch.device("cpu")
+x_goal = np.array([1.5, 0.001, 0.5, 0.0])
 
 
-def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
+
+def define_dubins_expert(x0, n_steps) -> Tuple[torch.Tensor, torch.Tensor]:
     """Run a test of obstacle avoidance MPC with a dubins car and return the results"""
     # -------------------------------------------
     # Define the problem
     # -------------------------------------------
-    # Define obstacles by defining a signed distance function
+    n_states = 4
+    n_controls = 2
+    horizon = 80
+    dt = 0.1
+
+    # Define dynamics
+    dynamics_fn = dubins_car_dynamics
+
+    # Define obstacles
+    radius = 0.3
+    margin = 0.1
+    center = [0.0, 0.0]
     obstacle_fns = [(lambda x: hypersphere_sdf(x, radius, [0, 1], center), margin)]
 
     # Define costs
+    x_goal = np.array([1.5, 0.001, 0.5, 0.0])
     running_cost_fn = lambda x, u: lqr_running_cost(
-        x, u, x_goal, dt * np.diag([1.0, 1.0, 0.1, 0.0]), 0.05 * np.eye(2)
+        x, u, x_goal, dt * np.diag([1.0, 1.0, 0.1, 0.0]), 0.01 * np.eye(2)
     )
     terminal_cost_fn = lambda x: squared_error_terminal_cost(x, x_goal)
+
+    # Define control bounds
+    control_bounds = [(-1, 1),
+                      (-0.5, 0.5)]  # [m/s^2, rad/s]
+
+    # Make sure that the initial state is np array
+    if isinstance(x0, torch.Tensor):
+        x0 = x0.numpy()
+    elif isinstance(x0, np.ndarray):
+        pass
+    else:
+        raise ValueError("x0 must be either a torch.Tensor or a np.ndarray")
+
 
     # Define MPC problem
     opti, x0_variables, u0_variables, x_variables, u_variables = construct_MPC_problem(
@@ -97,40 +130,26 @@ def define_dubins_mpc_expert() -> Callable[[torch.Tensor], torch.Tensor]:
         control_bounds,
     )
 
-    # --------------- ----------------------------
-    # Wrap the MPC problem to accept a tensor input and tensor output
     # -------------------------------------------
-    max_tries = 15
-
-    def mpc_expert(current_state: torch.Tensor) -> torch.Tensor:
-        # Initialize counters and variables
-        tries = 0
-        success = False
-        x_guess = None
-        u_guess = None
-
-        while not success and tries < max_tries:
-            success, control_out, _, _ = solve_MPC_problem(
-                opti.copy(),
-                x0_variables,
-                u0_variables,
-                current_state.detach().numpy(),
-                x_variables=x_variables,
-                u_variables=u_variables,
-                x_guess=x_guess,
-                u_guess=u_guess,
-            )
-            tries += 1
-
-            if not success:
-                print(f"failed after {tries} tries")
-
-        return torch.from_numpy(control_out)
-
-    return mpc_expert
+    # Simulate and return the results
+    # -------------------------------------------
+    _,x,u = simulate_mpc(
+        opti,
+        x0_variables,
+        u0_variables,
+        x0,
+        dt,
+        dynamics_fn,
+        n_steps,
+        verbose=False,
+        x_variables=x_variables,
+        u_variables=u_variables,
+    )
+    return torch.from_numpy(x[:-1,:]), torch.from_numpy(u)
 
 
-def clone_dubins_barrier_preferences(train=True, load=False):
+
+def clone_dubins_barrier_preferences(train=True, path = None):
     # Define Barrier Function
     x_obstacle = torch.tensor([center]).to(device)
     x_g = torch.tensor(x_goal).to(device)
@@ -139,7 +158,7 @@ def clone_dubins_barrier_preferences(train=True, load=False):
     # -------------------------------------------
     # Clone the MPC policy
     # -------------------------------------------
-    mpc_expert = define_dubins_mpc_expert()
+    mpc_expert = lambda x0, hor: define_dubins_expert(x0, n_steps=hor)
     hidden_layers = 4
     hidden_layer_width = 64
 
@@ -148,7 +167,7 @@ def clone_dubins_barrier_preferences(train=True, load=False):
         hidden_layer_width=hidden_layer_width,
         n_state_dims=n_states,
         n_control_dims=n_controls,
-        n_input_dims=n_states + len(x_obstacle[0]) + len(x_g),
+        n_input_dims=n_states,
         cbf= cbf,  # Ordered list of Barrier functions
         n_cbf_slack=n_cbf_slack,
         cbf_slack_weight=cbf_slack_weight,
@@ -157,25 +176,15 @@ def clone_dubins_barrier_preferences(train=True, load=False):
         control_bounds=control_bounds,
         x_obst= x_obstacle,
         r_obst= r_obstacle,
+        load_from_file=path,
     )
 
-    n_pts = int(1e4)
-    n_epochs = 300
+    n_pts = int(0.7e4)
+    n_epochs = 500
     learning_rate = 0.001
-    path = "./data/cloned_monotonic_barrier.pt"
+
     # Define Training optimizer
-    if train and not load:
-        cloned_policy.clone(
-            mpc_expert,
-            n_pts,
-            n_epochs,
-            learning_rate,
-            batch_size=64,
-            save_path=path,
-            x_des=x_g,
-            x_obs=x_obstacle,
-        )
-    elif train and load:
+    if train:
         checkpoint = path
         cloned_policy.clone(
             mpc_expert,
@@ -203,11 +212,7 @@ def simulate_and_plot(policy):
     fig = plt.figure(figsize=plt.figaspect(1.0))
     ax = fig.add_subplot(1, 1, 1)
     ax.plot([], [], "ro", label="Start")
-    # Create a lambda function to pass pass the policy together with obstacles and goal
-    x_obstacle = torch.tensor([center]).to(device)
-    x_g = torch.tensor(x_goal).to(device)
-
-    policy_fn = lambda x_state: policy.eval_np(x_state, x_obstacle.squeeze(), x_g.squeeze())
+    policy_fn = policy.eval_np
     n_steps = 100
     for x0 in x0s:
         # Run the cloned policy
@@ -220,6 +225,7 @@ def simulate_and_plot(policy):
             dynamics_fn,
             n_steps,
             substeps=10,
+            verbose=True,
         )
 
         # Plot it
@@ -238,17 +244,31 @@ def simulate_and_plot(policy):
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
-    ax.set_xlim([-2.5, 0.5])
+    ax.set_xlim([-3., 2.5])
     ax.set_ylim([-1.0, 1.0])
-    ax.title.set_text("Cloned Dubins Car Policy")
-
+    ax.title.set_text("Cloned Dubins Car Policy with UMNN BarrierNet")
+    ax.grid()
     ax.set_aspect("equal")
 
     ax.legend()
-
+    # Save the figure in vector format using time stamp as name
+    dir = os.path.dirname(__file__)
+    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pdf"
+    path = os.path.join(dir, file)
+    plt.savefig(path)
     plt.show()
 
-
 if __name__ == "__main__":
-    policy = clone_dubins_barrier_preferences(train=True, load=False)
+    # Extract current folder
+    dir = os.path.dirname(__file__)
+    # Define a file with the current date
+    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file = "..\\data\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pt"
+    
+    path = os.path.join(dir, file)
+    path = file = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\safety_transform\\data\\2023-03-02_00-20-45_dubins_cloned_barriernet_monotonic_policy.pt"
+    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-09_11-15-11_dubins_cloned_barriernet_monotonic_policy.pt"
+    # Define the policy
+    policy = clone_dubins_barrier_preferences(train=True, path= path)
     simulate_and_plot(policy)

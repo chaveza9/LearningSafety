@@ -60,6 +60,7 @@ x0s = [
     np.array([-2.0, -0.1, 0.0, 0.0]),
     np.array([-2.0, -0.2, 0.0, 0.0]),
     np.array([-2.0, -0.5, 0.0, 0.0]),
+    np.array([-1.0, 0, 0.0, 0.0]),
 ]
 # Define goal state
 x_goal = np.array([1.5, 0.001, 0.5, 0.0])
@@ -264,5 +265,5 @@ if __name__ == "__main__":
 
     path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-09_11-15-11_dubins_cloned_barriernet_monotonic_policy.pt"
     # Define the policy
-    policy = clone_dubins_barrier_preferences(train=True, path= path)
+    policy = clone_dubins_barrier_preferences(train=False, path= path)
     simulate_and_plot(policy)

@@ -146,9 +146,6 @@ class ClassKNN(torch.nn.Module):
         """ Control Matrix"""
         return torch.vstack([torch.zeros(2, 2).to(self.device), torch.eye(2).to(self.device)])
 
-    def _distance_to_obstacle(self, x):
-        return (x[:, 0] - self.x_obst[0])**2 + (x[:, 1] - self.x_obst[1]) ** 2 - self.r_obst ** 2
-
     def compute_hocbf_params(self, x: torch.Tensor, u_ref: torch.Tensor):
         # Compute CBF parameters
         A_cbf = torch.zeros(self.n_cbf, self.n_control_dims).repeat(x.shape[0], 1, 1).to(self.device)

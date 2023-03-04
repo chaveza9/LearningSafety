@@ -2,6 +2,8 @@ LICENSE
 README.md
 setup.cfg
 setup.py
+models/BarrierNet.py
+models/MLP.py
 models/__init__.py
 models/UMNN/MonotonicNN.py
 models/UMNN/NeuralIntegral.py
@@ -13,11 +15,8 @@ models/UMNN/made.py
 models/UMNN/spectral_normalization.py
 models/clone/__init__.py
 models/clone/classknn.py
-models/clone/mlpbarriernet.py
+models/clone/classknn_v.py
 models/clone/mlpparameteric.py
-models/clone/nn.py
-models/clone/nn_grad.py
-models/clone/nn_monotonic.py
 models/hocbf/__init__.py
 models/hocbf/barriernet.py
 mpc/__init__.py

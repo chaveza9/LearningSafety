@@ -167,6 +167,7 @@ def simulate_and_plot(policies, x_goal, center, radius, margin):
                 n_steps,
                 substeps=10,
                 x_goal=x_goal,
+                verbose=True,
             )
 
             # Plot it
@@ -245,7 +246,7 @@ if __name__ == "__main__":
     cbf_slack_weight = [1000]
     
     distance_cbf = {'type': 'distance',
-                    'f': lambda x, x_obst, radius: (x[0] - x_obst[0,0]) ** 2 + (x[1] - x_obst[0,1]) ** 2 - radius ** 2,
+                    'f': lambda x, x_obst, radius: (x[0] - x_obst[0, 0]) ** 2 + (x[1] - x_obst[0,1]) ** 2 - radius ** 2,
                     'args': [x_obstacle, r_obstacle], 
                     'rel_degree': 2,
                     'slack': True,
@@ -288,7 +289,7 @@ if __name__ == "__main__":
     cbf_1 = copy.deepcopy(cbf)
     # distance cbf
     cbf_1[0]['alpha'] = [lambda psi, p: p * psi+p*torch.tanh(psi), lambda psi, p: p * psi]
-    cbf_1[0]['rates'] = [0.01, 50]
+    cbf_1[0]['rates'] = [0.1, 10]
     policies.append(lambda x_state: barrier_layer(*compute_parameters_clf_hocbf(x_state, 
                                  cntrl_weights= cntrl_weights, 
                                  x_goal = x_goal, 
@@ -306,11 +307,11 @@ if __name__ == "__main__":
     # distance cbf
     cbf_2[0]['alpha'] = [lambda psi, p: p * psi, lambda psi, p: p * psi]
     cbf_2[0]['rates'] = [0.5, 10]
-    policies.append(lambda x_state: barrier_layer(*compute_parameters_clf_hocbf(x_state, 
-                                 cntrl_weights= cntrl_weights, 
-                                 x_goal = x_goal, 
+    policies.append(lambda x_state: barrier_layer(*compute_parameters_clf_hocbf(x_state,
+                                 cntrl_weights= cntrl_weights,
+                                 x_goal = x_goal,
                                  n_controls= n_controls,
-                                 clfs= clf_2, cbfs= cbf_2,  
+                                 clfs= clf_2, cbfs= cbf_2,
                                  device= device)).detach().squeeze().cpu()
                     )
     # -------------------------------------------

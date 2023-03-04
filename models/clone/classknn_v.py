@@ -3,25 +3,17 @@ from collections import OrderedDict
 from typing import Any, Callable, Dict, List, Tuple, Optional
 import warnings
 
-from cvxpylayers.torch import CvxpyLayer
 import torch
 import torch.nn as nn
 import numpy as np
-from .barriernet import BarrierNetLayer
+# Import local modules
+from models.hocbf.barriernet import BarrierNetLayer
+from models.UMNN import MonotonicNN
+from functorch import vmap, jacrev
 from tqdm import tqdm
 
 
-class PosLinear(nn.Module):
-    def __init__(self, in_dim, out_dim):
-        super(PosLinear, self).__init__()
-        self.weight = nn.Parameter(torch.randn((in_dim, out_dim)))
-        self.bias = nn.Parameter(torch.zeros((out_dim,)))
-
-    def forward(self, x):
-        return torch.matmul(x, self.weight) + torch.abs(self.bias)
-
-
-class PolicyCloningModel(torch.nn.Module):
+class ClassKNN(torch.nn.Module):
     def __init__(
             self,
             hidden_layers: int,
@@ -59,7 +51,7 @@ class PolicyCloningModel(torch.nn.Module):
             load_from_file: path to a file to load the model from
             
         """
-        super(PolicyCloningModel, self).__init__()
+        super(ClassKNN, self).__init__()
 
         # ----------------- Propagate Class Properties -----------------
         self.hidden_layers = hidden_layers
@@ -78,25 +70,33 @@ class PolicyCloningModel(torch.nn.Module):
 
         # ----------------- Construct MLP Network -----------------
         # Compute the output dimension of the MLP
-        self.n_output_dims = n_control_dims + sum(cbf_rel_degree)
+        self.n_output_dims = n_control_dims
         self.policy_layers: OrderedDict[str, nn.Module] = OrderedDict()
         self.policy_layers["input_linear"] = nn.Linear(
             self.n_input_dims,
             self.hidden_layer_width,
         )
-        self.policy_layers["input_activation"] = nn.Softplus()
+        self.policy_layers["input_activation"] = nn.Tanh()
         for i in range(self.hidden_layers):
             self.policy_layers[f"layer_{i}_linear"] = nn.Linear(
                 self.hidden_layer_width, self.hidden_layer_width
             )
-            self.policy_layers[f"layer_{i}_activation"] = nn.Softplus()
+            self.policy_layers[f"layer_{i}_activation"] = nn.Tanh()
         # Output the penalty parameters for cbf
         self.policy_layers["output_linear"] = nn.Linear(
-            self.hidden_layer_width, self.n_output_dims
+            self.hidden_layer_width, self.n_control_dims
         )
         # Convert to sequential model
         self.policy_nn = nn.Sequential(self.policy_layers).to(self.device)
+
+        # ----------------- Construct CBF Network -----------------
+        # Monotonically increasing neural network for relative degree 2
+        #Includes obstacle position encoding
+        self.mono1 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
+        # self.mono2 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
+                
         self.n_cbf = len(cbf)
+        self.cbf_rel_degree = cbf_rel_degree
         self.cbf = cbf
         self.x_obst = x_obst.to(self.device)
         self.r_obst = r_obst.to(self.device)
@@ -107,7 +107,7 @@ class PolicyCloningModel(torch.nn.Module):
             n_cbf=self.n_cbf,
             n_cbf_slack=n_cbf_slack,
             cbf_slack_weight=cbf_slack_weight,
-            cbf_rel_degree=cbf_rel_degree,
+            cbf_rel_degree=self.cbf_rel_degree,
             control_bounds=control_bounds,
             device=self.device,
         )
@@ -120,6 +120,24 @@ class PolicyCloningModel(torch.nn.Module):
         except:
             warnings.warn("Failed to load model from file")
 
+    def forward(self, x: torch.Tensor, u: torch.Tensor):
+        # Construct the input to the barrier net
+        x = torch.atleast_2d(x).to(self.device)
+        u = torch.atleast_2d(u).to(self.device)
+        # pass state through policy network
+        u_hat = self.policy_nn(x)
+        # pass state through cbf network
+        return u_hat, self.compute_hocbf_params(x, u)
+
+    def eval_np(self, x: np.ndarray):
+        # Construct the input to the barrier net
+
+        x = torch.atleast_2d(torch.from_numpy(x)).to(self.device)
+        # pass state through policy network
+        u_hat = self.policy_nn(x)
+        # pass state through cbf network
+        return self.barrier_layer(*self.compute_hocbf_params(x, u_hat)).detach().cpu().squeeze()
+
     def _f(self, x):
         """Open Loop Dynamics"""
         return torch.vstack([x[2] * torch.cos(x[3]), x[2] * torch.sin(x[3]), torch.zeros(2, 1).to(self.device)])
@@ -128,23 +146,30 @@ class PolicyCloningModel(torch.nn.Module):
         """ Control Matrix"""
         return torch.vstack([torch.zeros(2, 2).to(self.device), torch.eye(2).to(self.device)])
 
-    def compute_hocbf_params(self, x: torch.Tensor, u_ref: torch.Tensor, cbf_rates: torch.Tensor):
+    def compute_hocbf_params(self, x: torch.Tensor, u_ref: torch.Tensor):
         # Compute CBF parameters
         A_cbf = torch.zeros(self.n_cbf, self.n_control_dims).repeat(x.shape[0], 1, 1).to(self.device)
         b_cbf = torch.zeros(self.n_cbf, 1).repeat(x.shape[0], 1, 1).to(self.device)
-        # Distance from Obstacle
-        cbf = lambda x: self.cbf[0](x, self.x_obst.reshape(-1), self.r_obst)
+        # Iterate over each cbf over each state
         for i in range(x.shape[0]):
-            p1, p2 = cbf_rates[i, 0], cbf_rates[i, 1]
-            alpha_1 = lambda psi: p1 * psi
-            alpha_2 = lambda psi: p2 * psi
-            A_i, b_i = self._compute_lie_derivative(x[i], cbf, alpha_1, alpha_2)
-            A_cbf[i] = -A_i
-            b_cbf[i] = b_i
+            for idx, cbf in enumerate(self.cbf):
+                # check relative degree of cbf (Obstacle type)
+                if idx == 0:
+                    barrier_fun = lambda x: cbf(x, self.x_obst.reshape(-1), self.r_obst)
+                    h = torch.cat((x[i], self.x_obst.reshape(-1)), dim=0)
+                    alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(h))
+                    # alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(h))
+                    A_i, b_i = self._compute_lie_derivative_1st_order(x[i], barrier_fun, alpha_1)
+                    A_cbf[i, idx] = -A_i
+                    b_cbf[i, idx] = b_i
+                elif self.cbf_rel_degree[idx] == 1:
+                    alpha_1 = lambda psi: 1.0 * psi  # force gain of 1.0
+                    A_i, b_i = self._compute_lie_derivative_1st_order(x[i], cbf, alpha_1)
+                    A_cbf[i, idx] = -A_i
+                    b_cbf[i, idx] = b_i
         return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
 
-    def _compute_lie_derivative(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
-                                alpha_fun_2: Callable):
+    def _compute_lie_derivative_1st_order(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable):
         """Compute the Lie derivative of the CBF wrt the dynamics"""
         # Make sure the input requires gradient
         x.requires_grad_(True)
@@ -152,92 +177,76 @@ class PolicyCloningModel(torch.nn.Module):
         psi0 = barrier_fun(x)
         db_dx = torch.autograd.grad(psi0, x, create_graph=True, retain_graph=True)[0]
         Lfb = db_dx @ self._f(x)
-        db2_dx = torch.autograd.grad(Lfb, x, retain_graph=True)[0]
+        Lgb = db_dx @ self._g()
+        psi1 = Lfb + alpha_fun_1(psi0)
+
+        # Compute the Lie derivative
+        return Lgb, psi1
+
+    def _compute_lie_derivative_2nd_order_jacrev(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
+                                          alpha_fun_2: Callable):
+        psi0 = barrier_fun(x)
+        Lfb = lambda x: jacrev(barrier_fun)(x) @ self._f(x)
+        db2_dx = jacrev(Lfb)(x)
+        Lf2b = db2_dx @ self._f(x)
+        LgLfb = db2_dx @ self._g()
+
+        psi1 = lambda x: Lfb(x) + alpha_fun_1(psi0)
+        psi1_dot = jacrev(psi1)(x) @ self._f(x)
+
+        psi2 = psi1_dot + alpha_fun_2(psi1(x))
+
+        return LgLfb, Lf2b + psi2, psi1(x)
+
+    def _compute_lie_derivative_2nd_order(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
+                                          alpha_fun_2: Callable):
+        """Compute the Lie derivative of the CBF wrt the dynamics"""
+        # Make sure the input requires gradient
+        x.requires_grad_(True)
+        # Compute the CBF
+        psi0 = barrier_fun(x)
+        db_dx = torch.autograd.grad(psi0, x, create_graph=True, retain_graph=True)[0]
+        Lfb = db_dx @ self._f(x)
+        db2_dx = torch.autograd.grad(Lfb, x, retain_graph=True, create_graph=True)[0]
         Lf2b = db2_dx @ self._f(x)
         LgLfb = db2_dx @ self._g()
         psi1 = Lfb + alpha_fun_1(psi0)
-        psi1_dot = torch.autograd.grad(psi1, x, retain_graph=True)[0] @ self._f(x)
+        psi1_dot = torch.autograd.grad(psi1, x, retain_graph=True, create_graph=True)[0] @ self._f(x)
         psi2 = psi1_dot + alpha_fun_2(psi1)
         # Compute the Lie derivative
-        return LgLfb, Lf2b + psi2
+        return LgLfb, Lf2b + psi2, psi1
 
-    def forward(self, x: torch.Tensor, x_obs: Optional[torch.Tensor], x_des: Optional[torch.Tensor]):
-        # Construct the input to the barrier net
-        x = torch.atleast_2d(x)
-        if x_obs is not None and x_des is not None:
-            x_obs = x_obs.repeat(x.shape[0], 1)
-            x_des = x_des.repeat(x.shape[0], 1)
-            x_in = torch.hstack([x, x_obs, x_des]).to(self.device)
-        elif x_obs is not None and x_des is None:
-            x_obs = x_obs.repeat(x.shape[0], 1)
-            x_in = torch.hstack([x, x_obs]).to(self.device)
-        else:
-            x_in = x.to(self.device)
-        # pass state through policy network
-        u_out = self.policy_nn(x_in)
-        u_ref = u_out[:, :self.n_control_dims]
-        cbf_rates = u_out[:, self.n_control_dims:]
-        # pass state and penalty parameters through barrier net
-        return self.barrier_layer(*self.compute_hocbf_params(x, u_ref, cbf_rates)), cbf_rates
-
-    def eval_np(self, x: np.ndarray, x_obs: Optional[np.ndarray] = None, x_des: Optional[np.ndarray] = None):
-        # Construct the input to the barrier net
-
-        x = torch.atleast_2d(torch.from_numpy(x)).to(self.device)
-        if x_obs is not None and x_des is not None:
-            x_obs = x_obs.repeat(x.shape[0], 1).to(self.device)
-            x_des = x_des.repeat(x.shape[0], 1).to(self.device)
-            x_in = torch.hstack([x, x_obs, x_des]).to(self.device)
-        elif x_obs is not None and x_des is None:
-            x_obs = x_obs.repeat(x.shape[0], 1).to(self.device)
-            x_in = torch.hstack([x, x_obs]).to(self.device)
-        else:
-            x_in = x.to(self.device)
-
-        u_out = self.policy_nn(x_in)
-        u_ref = u_out[:, :self.n_control_dims]
-        cbf_rates = u_out[:, self.n_control_dims:]
-        # pass state and penalty parameters through barrier net
-        return self.barrier_layer(*self.compute_hocbf_params(x, u_ref, cbf_rates)).detach().cpu().squeeze(), \
-            cbf_rates.squeeze().detach().cpu().numpy()
-
-    def _barrier_loss(self, x_train, u_train, cbf_rates):
+    def _barrier_loss(self, u_train, cbf_params):
         """Compute the barrier loss"""
         # Compute the CBF parameters
-        _, A_cbf, b_cbf = self.compute_hocbf_params(x_train, u_train, cbf_rates)
+        _, A_cbf, b_cbf = cbf_params
         LgLfb = -A_cbf
         # Compute the barrier loss
         loss = 0
         beta1 = 1
-        beta2 = 0.01
-        for i in range(self.n_cbf):
-            # constraint violation
-            loss += beta1*torch.sum(torch.relu(-(LgLfb[:, i, :] * u_train + b_cbf[:, i, :])))
-            # constraint satisfaction
-            loss += -beta2*torch.sum(torch.relu(torch.tanh(LgLfb[:, i, :] * u_train + b_cbf[:, i, :])))
-        return loss
-
-
-    def save_to_file(self, save_path: str):
-        save_data = {
-            "hidden_layers": self.hidden_layers,
-            "hidden_layer_width": self.hidden_layer_width,
-            "n_state_dims": self.n_state_dims,
-            "n_control_dims": self.n_control_dims,
-            "state_space": self.state_space,
-            "n_output_dims": self.n_output_dims,
-            "barrier_net_fn": self.barrier_net_fn,
-            "state_dict": self.state_dict(),
-        }
-        torch.save(save_data, save_path)
+        beta2 = 0.001
+        # Reshape u to match the shape of the CBF parameters
+        batch_size = u_train.shape[0]
+        u_train = u_train.reshape((batch_size, self.n_control_dims, 1))
+        # constraint violation
+        loss += beta1*torch.sum(torch.relu(-(torch.bmm(LgLfb, u_train) + b_cbf)))
+        # constraint satisfaction
+        loss += beta2*torch.sum(torch.relu(torch.tanh(torch.bmm(LgLfb, u_train) + b_cbf)))
+        # # violation
+        # loss += beta1*torch.sum(torch.relu(-psi_n_1))
+        # # saturation
+        # loss += beta2*torch.sum(torch.relu(torch.tanh(psi_n_1)))
+            
+        return loss/batch_size
 
     def clone(
             self,
-            expert: Callable[[torch.Tensor], torch.Tensor],
+            expert: Callable[[torch.Tensor, int], torch.Tensor],
             n_pts: int,
             n_epochs: int,
             learning_rate: float,
             batch_size: int = 64,
+            n_steps: int = 100,
             save_path: Optional[str] = None,
             load_checkpoint: Optional[str] = None,
             x_obs: Optional[torch.Tensor] = None,
@@ -256,16 +265,23 @@ class PolicyCloningModel(torch.nn.Module):
         """
         # Generate some training data
         # Start by sampling points uniformly from the state space
-        x_train = torch.zeros((n_pts, self.n_state_dims))
-        for dim in range(self.n_state_dims):
-            x_train[:, dim] = torch.Tensor(n_pts).uniform_(*self.state_space[dim])
 
-        # Now get the expert's control input at each of those points
+
+        # Create buffer for training data
+        x_train = torch.zeros((n_pts, self.n_state_dims))
         u_expert = torch.zeros((n_pts, self.n_control_dims))
-        data_gen_range = tqdm(range(n_pts), ascii=True, desc="Generating data")
+        # Create random initial conditions
+        n_x0s = n_pts // n_steps
+        x0s = []
+        data_gen_range = tqdm(range(n_x0s), ascii=True, desc="Generating data")
         data_gen_range.set_description("Generating training data...")
         for i in data_gen_range:
-            u_expert[i, :] = expert(x_train[i, :])
+            x0s.append(np.zeros(self.n_state_dims))
+            for dim in range(self.n_state_dims - 1):
+                x0s[i][dim] = np.random.uniform(self.state_space[dim][0], self.state_space[dim][1])
+            # Run expert policy for n_steps
+            x_train[i * n_steps:(i + 1) * n_steps, :], u_expert[i * n_steps:(i + 1) * n_steps, :] \
+                = expert(x0s[i], n_steps+1)
 
         # Move inputs and outputs to the GPU
         x_train = x_train.to(self.device)
@@ -278,12 +294,17 @@ class PolicyCloningModel(torch.nn.Module):
         )
         # Load checkpoint if provided
         if load_checkpoint:
-            checkpoint = torch.load(load_checkpoint, map_location=self.device)
-            self.load_state_dict(checkpoint["model_state_dict"])
-            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-            epoch = checkpoint["epoch"]
-            loss = checkpoint["loss"]
-            n_epochs -= epoch
+            try:
+                checkpoint = torch.load(load_checkpoint, map_location=self.device)
+                self.load_state_dict(checkpoint["model_state_dict"])
+                optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+                epoch = checkpoint["epoch"]
+                loss = checkpoint["loss"]
+                n_epochs -= epoch
+                print(f"Loaded checkpoint from {load_checkpoint} at epoch {epoch} with loss {loss}")
+            except FileNotFoundError:
+                print(f"Checkpoint {load_checkpoint} not found. Starting from scratch.")
+
         curr_min_loss = np.inf
         # Optimize in mini-batches
         for epoch in range(n_epochs):
@@ -298,12 +319,13 @@ class PolicyCloningModel(torch.nn.Module):
                 u_expert_batch = u_expert[batch_indices]
 
                 # Forward pass: predict the control input
-                u_predicted, cbf_rates = self(x_batch, x_obs.squeeze(), x_des.squeeze())
+                u_hat, cbf_params = self(x_batch, u_expert_batch)
                 # Compute the loss and backpropagate
                 # MSE Loss
-                loss = mse_loss_fn(u_predicted.squeeze(), u_expert_batch)
+                # Clone Loss
+                loss = 0.1*mse_loss_fn(u_hat.squeeze(), u_expert_batch)
                 # CBF Loss
-                loss += self._barrier_loss(x_batch, u_expert_batch, cbf_rates)
+                loss += self._barrier_loss(u_expert_batch, cbf_params)
                 # Add L1 regularization
                 for layer in self.policy_nn:
                     if not hasattr(layer, "weight"):
@@ -316,7 +338,8 @@ class PolicyCloningModel(torch.nn.Module):
 
                 loss_accumulated += loss.detach()
 
-            print(f"Epoch {epoch}: {loss_accumulated / (n_pts / batch_size)}")
+            print(f" \n Epoch {epoch}: {loss_accumulated / (n_pts / batch_size)} \n")
+
             if loss_accumulated < curr_min_loss:
                 torch.save({
                     'epoch': epoch,
@@ -326,5 +349,4 @@ class PolicyCloningModel(torch.nn.Module):
                 }, save_path)
                 curr_min_loss = loss_accumulated
 
-        # if save_path is not None:
-        #     self.save_to_file(save_path)
+
