@@ -7,6 +7,10 @@ import matplotlib.pyplot as plt
 import sys
 import os
 import copy
+from functorch import vmap, jacrev
+from functools import partial
+
+sys.path.append(os.path.abspath('..'))
 from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from mpc.simulator import simulate_barriernet
 
@@ -60,16 +64,19 @@ def compute_parameters_clf_cbf(x: torch.Tensor,
     # Compute the total number of CLF and CBF constraints
     n_clf = len(clfs)
     n_cbf = len(cbfs)
+    # Define vmap function for computing the Lie derivative
+    compute_batch_lie_derivative_1st_order = \
+        vmap(_compute_lie_derivative_1st_order, in_dims=(0, None, None), out_dims=(0, 0, 0))
     # -------- Compute CLF and CBF Constraint Parameters --------
-    
     # Compute CLF parameters
     A_clf = torch.zeros(n_clf, n_controls).to(device)
     b_clf = torch.zeros(n_clf, 1).to(device)
     for idx, clf in enumerate(clfs):
-        V = lambda x: clf['f'](x, x_goal)
-        alpha1 = lambda x: clf['alpha'][0](x, clf['rates'][0])
+        V = partial(clf['f'], *clf['args'])
+        alpha1 = partial(clf['alpha'][0], p=clf['rates'][0])
         # Compute CLF constraint
-        G, F, _ = _compute_lie_derivative_1st_order(x, V, alpha1)
+        G, F, _ = compute_batch_lie_derivative_1st_order((torch.atleast_2d(x)), V, alpha1)
+        # G, F, _ = _compute_lie_derivative_1st_order(x, V, alpha1)
         # Populate constraint matrices
         A_clf[idx] = G
         b_clf[idx] = -F
@@ -78,21 +85,12 @@ def compute_parameters_clf_cbf(x: torch.Tensor,
     A_cbf = torch.zeros(n_cbf, n_controls).to(device)
     b_cbf = torch.zeros(n_cbf, 1).to(device)
     for idx, cbf in enumerate (cbfs):
-        barrier_function = lambda x: cbf['f'] (x, *cbf['args'])
-        if cbf["type"] == "distance" and cbf['rel_degree'] == 2:
-            # Extract Rates
-            p1, p2 = cbf['rates']
+        barrier_function = partial(cbf['f'], *cbf['args'])
+        if (cbf["type"] == "state_constraint" or cbf["type"] == "distance_trans") and cbf['rel_degree'] == 1:
             # Create alpha functions for each relative degree
-            alpha1 = lambda x: cbf['alpha'][0](x, p1)
-            alpha2 = lambda x: cbf['alpha'][1](x, p2)
+            alpha1 = partial(cbf['alpha'][0], p=cbf['rates'])
             # Compute CBF constraint
-            G, F, _ = _compute_lie_derivative_2nd_order(x, barrier_fun= barrier_function, alpha_fun_1= alpha1, alpha_fun_2= alpha2)
-        elif (cbf["type"] == "state_constraint" or cbf["type"] == "distance_trans") and cbf['rel_degree'] == 1:
-            p = cbf['rates']
-            # Create alpha functions for each relative degree
-            alpha1 = lambda x: cbf['alpha'][0](x, p)
-            # Compute CBF constraint
-            G, F, _ = _compute_lie_derivative_1st_order(x, barrier_fun= barrier_function, alpha_fun_1= alpha1)
+            G, F, _ = compute_batch_lie_derivative_1st_order(torch.atleast_2d(x), barrier_function, alpha1)
         else :
             raise "Error: CBF type not recognized"
         # Populate CBF constraint parameters
@@ -125,15 +123,12 @@ def _compute_lie_derivative_2nd_order(x: torch.Tensor, barrier_fun: Callable, al
     
 def _compute_lie_derivative_1st_order(x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable):
         """Compute the Lie derivative of the CBF wrt the dynamics"""
-        # Make sure the input requires gradient
-        x.requires_grad_(True)
         # Compute the CBF
         psi0 = barrier_fun(x)
-        db_dx = torch.autograd.grad(psi0, x, create_graph=True, retain_graph=True)[0]
+        db_dx = jacrev(barrier_fun)(x)
         Lfb = db_dx @ _f(x)
         Lgb = db_dx @ _g
         psi1 = Lfb + alpha_fun_1(psi0)
-        
         # Compute the Lie derivative
         return Lgb, psi1, psi0
 
@@ -234,101 +229,55 @@ if __name__ == "__main__":
     n_clf = 2  # Number of CLF constraints [V_speed, V_angle]
     n_clf_slack = n_clf  # Number of CLF slack variables
     clf_slack_weight = [1., 1.]
-    
-    V_speed = {'type': 'des_speed', 
-               'f': lambda x, x_goal: torch.square(x[2] - x_goal[2]),
+
+    V_speed = {'type': 'des_speed',
+               'f': lambda x_goal, x: torch.square(x[2] - x_goal[2]),
+               'args': [x_goal],
                'rel_degree': 1,
                'rates': [1.0],
-               'alpha': [lambda x, p: p*x]}
+               'alpha': [lambda x, p: p * x]}
     V_angle = {'type': 'des_angle',
-               'f': lambda x, x_goal:torch.square(
-                    torch.cos(x[3]) * (x[1] - x_goal[1]) - torch.sin(x[3]) * (x[0] - x_goal[0])),
+               'f': lambda x_goal, x: torch.square(
+                   torch.cos(x[3]) * (x[1] - x_goal[1]) - torch.sin(x[3]) * (x[0] - x_goal[0])),
+               'args': [x_goal],
                'rel_degree': 1,
                'rates': [1.0],
-               'alpha': [lambda x, p: p*x]}
+               'alpha': [lambda x, p: p * x]}
     clf = [V_speed, V_angle]
-    
+
     # CBF
     n_cbf = 3  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
-    n_cbf_slack = 0  # Number of CBF slack variables
-    cbf_rel_degree = [2, 1, 1]
-    # cbf_slack_weight = [1000]
+    n_cbf_slack = 1  # Number of CBF slack variables
+    cbf_rel_degree = [1, 1, 1]
+    cbf_slack_weight = [1000]
     
-    distance_cbf = {'type': 'distance',
-                    'f': lambda x, x_obst, radius: (x[0] - x_obst[0,0]) ** 2 + (x[1] - x_obst[0,1]) ** 2 - radius ** 2,
-                    'args': [x_obstacle, r_obstacle], 
-                    'rel_degree': 2,
+    cv = 1/6*torch.pi
+    av_p = torch.tensor([0.21, 3.5]).to(device).requires_grad_(False)
+    aV = lambda x, p: p[0]*x[3]**2+p[1]*(x[3]+cv)**2  
+    
+    distance_cbf_aV = {'type': 'distance_trans',
+                    'f': lambda x_obst, radius, x: torch.squeeze(torch.square(x[0] - x_obst[0, 0]) + torch.square(
+                            x[1] - x_obst[0, 1]) - torch.square(radius) - aV(x, av_p)),
+                    'args': [x_obstacle, r_obstacle],
+                    'rel_degree': 1,
                     'slack': True,
                     'slack_weight': 1000,
-                    'alpha':[lambda psi, p: p * psi, lambda psi, p: p * psi],
-                    'rates': [0.5, 10.0]}
+                    'alpha': [lambda psi, p: p[0] * psi],
+                    'rates': [0.5]}
     vel_min_cbf = {'type': 'state_constraint',
-                   'f': lambda x, v_min: x[2] - v_min,
+                   'f': lambda v_min, x: x[2] - v_min,
                    'args': [0.1],
                    'rel_degree': 1,
                    'slack': False,
                    'rates': 1.0,
                    'alpha': [lambda psi, p: p * psi]}
     vel_max_cbf = {'type': 'state_constraint',
-                   'f': lambda x, v_max: v_max - x[2],
+                   'f': lambda v_max, x: v_max - x[2],
                    'args': [1.0],
                    'rel_degree': 1,
                    'slack': False,
                    'rates': 1.0,
                    'alpha': [lambda psi, p: p * psi]}
-    cbf = [distance_cbf, vel_min_cbf, vel_max_cbf]
-    # -------------------------------------------
-    # Define HOCBF-CLFBarrierNetLayer solver
-    hocbf_barrier_layer = CLFBarrierNetLayer(
-        n_states,
-        n_controls,
-        n_clf,
-        clf_slack_weight=clf_slack_weight,
-        n_cbf=n_cbf,
-        n_cbf_slack=n_cbf_slack,
-        cbf_rel_degree=cbf_rel_degree,
-        control_bounds=control_bounds,
-    )
-    # -------------------------------------------
-    # Policy (Aggressive)
-    # Linear class k fuctions only
-    cntrl_weights = torch.tensor([1., 1.]).to(device) # Same weights for all policies
-    # Linear class k functions
-    clf_hocbf = copy.deepcopy(clf)
-    hocbf = copy.deepcopy(cbf)
-    # distance cbf
-    # policies.append(lambda x_state: hocbf_barrier_layer(*compute_parameters_clf_cbf(x_state,
-    #                                                                             cntrl_weights=cntrl_weights,
-    #                                                                             x_goal=x_goal,
-    #                                                                             n_controls=n_controls,
-    #                                                                             clfs=clf_hocbf, cbfs=hocbf,
-    #                                                                             device=device)).detach().squeeze().cpu()
-    #                 )
-    # -------------------------------------------
-    # -------------------------------------------
-    # Define aV-CBF-CLF policy
-    # -------------------------------------------
-    # Define Number of cbf and clf constraints
-    # CLF
-    n_clf = 2  # Number of CLF constraints [V_speed, V_angle]
-    n_clf_slack = n_clf  # Number of CLF slack variables
-    clf_slack_weight = [1., 1.]
-    # CBF
-    n_cbf = 3  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
-    n_cbf_slack = 0  # Number of CBF slack variables
-    cbf_rel_degree = [1, 1, 1]
-    
-    cv = 1*torch.pi
-    av_p = torch.tensor([0.21, 3.5]).to(device).requires_grad_(False)
-    aV = lambda x, p: p[0]*x[3]**2+p[1]*(x[3]+cv)**2  
-    distance_cbf_aV = {'type': 'distance_trans',
-                    'f': lambda x, x_obst, radius: (x[0] - x_obst[0,0]) ** 2 + (x[1] - x_obst[0,1]) ** 2 - radius ** 2  - aV(x, av_p),
-                    'args': [x_obstacle, r_obstacle], 
-                    'rel_degree': 1,
-                    'slack': True,
-                    'slack_weight': 1000,
-                    'alpha':[lambda psi, p: p[0] * psi],
-                    'rates': [0.5]}
     cbf = [distance_cbf_aV, vel_min_cbf, vel_max_cbf]
     # -------------------------------------------
     # Define single CBF-CLFBarrierNetLayer solver
@@ -341,6 +290,7 @@ if __name__ == "__main__":
         n_cbf_slack=n_cbf_slack,
         cbf_rel_degree=cbf_rel_degree,
         control_bounds=control_bounds,
+        cbf_slack_weight=cbf_slack_weight,
     )
     
     # -------------------------------------------
