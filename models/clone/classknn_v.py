@@ -11,6 +11,7 @@ from models.hocbf.barriernet import BarrierNetLayer
 from models.UMNN import MonotonicNN
 from functorch import vmap, jacrev
 from tqdm import tqdm
+from functools import partial
 
 
 class ClassKNN(torch.nn.Module):
@@ -112,6 +113,10 @@ class ClassKNN(torch.nn.Module):
             device=self.device,
         )
 
+        # Define a vmap function for computing the lie derivative
+        self.vmap_lie_derivative = \
+            vmap(self._compute_lie_derivative_1st_order, in_dims=(0, None, None), out_dims=(0,0,0))
+
         # Load the weights and biases if provided
         try:
             if load_from_file is not None:
@@ -127,7 +132,7 @@ class ClassKNN(torch.nn.Module):
         # pass state through policy network
         u_hat = self.policy_nn(x)
         # pass state through cbf network
-        return u_hat, self.compute_hocbf_params(x, u)
+        return u_hat, self.compute_batched_hocbf_params(x, u)
 
     def eval_np(self, x: np.ndarray):
         # Construct the input to the barrier net
@@ -159,29 +164,53 @@ class ClassKNN(torch.nn.Module):
                     h = torch.cat((x[i], self.x_obst.reshape(-1)), dim=0)
                     alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(h))
                     # alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(h))
-                    A_i, b_i = self._compute_lie_derivative_1st_order(x[i], barrier_fun, alpha_1)
+                    A_i, b_i, _ = self._compute_lie_derivative_1st_order(x[i], barrier_fun, alpha_1)
                     A_cbf[i, idx] = -A_i
                     b_cbf[i, idx] = b_i
                 elif self.cbf_rel_degree[idx] == 1:
                     alpha_1 = lambda psi: 1.0 * psi  # force gain of 1.0
-                    A_i, b_i = self._compute_lie_derivative_1st_order(x[i], cbf, alpha_1)
+                    A_i, b_i, _ = self._compute_lie_derivative_1st_order(x[i], cbf, alpha_1)
                     A_cbf[i, idx] = -A_i
                     b_cbf[i, idx] = b_i
         return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
 
+    def compute_batched_hocbf_params(self, x: torch.Tensor, u_ref: torch.Tensor):
+        # Compute CBF parameters
+        A_cbf = torch.zeros(self.n_cbf, self.n_control_dims).repeat(x.shape[0], 1, 1).to(self.device)
+        b_cbf = torch.zeros(self.n_cbf, 1).repeat(x.shape[0], 1, 1).to(self.device)
+        # Iterate over each cbf over each state
+
+        # Make sure that the input is a batch
+        x = torch.atleast_2d(x).to(self.device)
+        batch_size = x.shape[0]
+        for idx, cbf in enumerate(self.cbf):
+            # check relative degree of cbf (Obstacle type)
+            if idx == 0:
+                barrier_fun = lambda x: cbf(x, self.x_obst, self.r_obst)
+                alpha_mock = lambda psi: psi*0.0
+                A_i, Lfb, psi0 = self.vmap_lie_derivative(x, barrier_fun, alpha_mock)
+                # Compute the class kappa function and barrier constraint
+                h = torch.cat((x, self.x_obst.repeat((x.shape[0], 1))), dim=1)
+                b_i = Lfb + self.mono1(torch.atleast_2d(psi0).T, h)
+                A_cbf[:, idx] = -A_i
+                b_cbf[:, idx] = b_i
+            else:
+                alpha_1 = lambda psi: 1.0 * psi  # force gain of 1.0
+                A_i, b_i, _ = self.vmap_lie_derivative(x, cbf, alpha_1)
+                A_cbf[:, idx] = -A_i
+                b_cbf[:, idx] = b_i
+        return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
+
     def _compute_lie_derivative_1st_order(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable):
         """Compute the Lie derivative of the CBF wrt the dynamics"""
-        # Make sure the input requires gradient
-        x.requires_grad_(True)
         # Compute the CBF
         psi0 = barrier_fun(x)
-        db_dx = torch.autograd.grad(psi0, x, create_graph=True, retain_graph=True)[0]
+        db_dx = jacrev(barrier_fun)(x)
         Lfb = db_dx @ self._f(x)
         Lgb = db_dx @ self._g()
         psi1 = Lfb + alpha_fun_1(psi0)
-
         # Compute the Lie derivative
-        return Lgb, psi1
+        return Lgb, psi1, psi0
 
     def _compute_lie_derivative_2nd_order_jacrev(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
                                           alpha_fun_2: Callable):

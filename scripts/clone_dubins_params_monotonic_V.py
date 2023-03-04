@@ -47,10 +47,11 @@ torch.set_default_dtype(torch.float64)
 # -------- Define Number of cbf and clf constraints --------
 n_cbf = 1  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
 torch.pi = torch.acos(torch.zeros(1)).item() * 2
-cv = 1/6*torch.pi
+cv = 2*torch.pi
 av_p = torch.tensor([0.21, 3.5]).to(device).requires_grad_(False)
-aV = lambda x, p: p[0]*x[3]**2+p[1]*(x[3]+cv)**2  
-distance_cbf = lambda x, x_obst, radius: (x[0] - x_obst[0])**2 + (x[1] - x_obst[1]) ** 2 - radius ** 2 - aV(x, av_p)
+aV = lambda x, p: p[0]*x[2]**2+p[1]*(x[3]+cv)**2  
+distance_cbf =  lambda x, x_obst, r_obst: torch.squeeze(torch.square(x[0] - x_obst[0, 0]) + torch.square(
+                            x[1] - x_obst[0, 1]) - torch.square(r_obst) - aV(x, av_p))
 v_min_cbf = lambda x: x[2] - 0.01
 v_max_cbf = lambda x: 2 - x[2]
 cbf = [distance_cbf, v_min_cbf, v_max_cbf]
@@ -254,7 +255,7 @@ def simulate_and_plot(policy):
     # Save the figure in vector format using time stamp as name
     dir = os.path.dirname(__file__)
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pdf"
+    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy_with_v_transform.pdf"
     path = os.path.join(dir, file)
     plt.savefig(path)
     plt.show()
@@ -265,9 +266,9 @@ if __name__ == "__main__":
     # Define a file with the current date
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     file = "..\\data\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pt"
-    
     path = os.path.join(dir, file)
-    path = file = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\safety_transform\\data\\2023-03-02_00-20-45_dubins_cloned_barriernet_monotonic_policy.pt"
+    
+    # path = file = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\safety_transform\\data\\2023-03-02_00-20-45_dubins_cloned_barriernet_monotonic_policy.pt"
     # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-09_11-15-11_dubins_cloned_barriernet_monotonic_policy.pt"
     # Define the policy
     policy = clone_dubins_barrier_preferences(train=True, path= path)

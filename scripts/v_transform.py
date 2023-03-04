@@ -250,10 +250,10 @@ if __name__ == "__main__":
     n_cbf_slack = 1  # Number of CBF slack variables
     cbf_rel_degree = [1, 1, 1]
     cbf_slack_weight = [1000]
-    
-    cv = 1/6*torch.pi
+    # cbf_slack_weight = None
+    cv = 1/3*torch.pi
     av_p = torch.tensor([0.21, 3.5]).to(device).requires_grad_(False)
-    aV = lambda x, p: p[0]*x[3]**2+p[1]*(x[3]+cv)**2  
+    aV = lambda x, p: p[0]*x[2]**2+p[1]*(x[3]+cv)**2  
     
     distance_cbf_aV = {'type': 'distance_trans',
                     'f': lambda x_obst, radius, x: torch.squeeze(torch.square(x[0] - x_obst[0, 0]) + torch.square(
@@ -263,7 +263,7 @@ if __name__ == "__main__":
                     'slack': True,
                     'slack_weight': 1000,
                     'alpha': [lambda psi, p: p[0] * psi],
-                    'rates': [0.5]}
+                    'rates': [10]}
     vel_min_cbf = {'type': 'state_constraint',
                    'f': lambda v_min, x: x[2] - v_min,
                    'args': [0.1],

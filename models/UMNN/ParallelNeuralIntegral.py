@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import math
+from functorch import vmap, jacrev
 
 
 def _flatten(sequence):
@@ -69,6 +70,9 @@ def computeIntegrand(x, h, integrand, x_tot, nb_steps):
         f = integrand.forward(x, h)
         g_param = _flatten(torch.autograd.grad(f, integrand.parameters(), x_tot, create_graph=True, retain_graph=True))
         g_h = _flatten(torch.autograd.grad(f, h, x_tot))
+    
+    # ft_jacobian = jacrev(integrand.forward, argnums=(0,1))
+    # g_param, g_h = ft_jacobian(x, h, x_tot)
 
     return g_param, g_h.view(int(x.shape[0]/nb_steps), nb_steps, -1).sum(1)
 
