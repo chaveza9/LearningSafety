@@ -180,7 +180,7 @@ def clone_dubins_barrier_preferences(train=True, path = None):
         load_from_file=path,
     )
 
-    n_pts = int(0.7e4)
+    n_pts = int(0.5e4)
     n_epochs = 500
     learning_rate = 0.001
 
@@ -192,7 +192,7 @@ def clone_dubins_barrier_preferences(train=True, path = None):
             n_pts,
             n_epochs,
             learning_rate,
-            batch_size=64,
+            batch_size=128,
             save_path=path,
             load_checkpoint=checkpoint,
             x_des=x_g,
@@ -255,7 +255,7 @@ def simulate_and_plot(policy):
     # Save the figure in vector format using time stamp as name
     dir = os.path.dirname(__file__)
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy_with_v_transform.pdf"
+    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy_with_v_transform_and_diff_qp.pdf"
     path = os.path.join(dir, file)
     plt.savefig(path)
     plt.show()

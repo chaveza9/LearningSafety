@@ -32,6 +32,7 @@ class ClassKNN(torch.nn.Module):
             r_obst: torch.Tensor,
             cbf_slack_weight: Optional[List[float]] = None,
             load_from_file: Optional[str] = None,
+            use_barrier_net: bool = True,
     ):
         """
         A model for cloning a policy.
@@ -95,7 +96,7 @@ class ClassKNN(torch.nn.Module):
         #Includes obstacle position encoding
         self.mono1 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
         # self.mono2 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
-                
+        self.use_barrier_net = use_barrier_net       
         self.n_cbf = len(cbf)
         self.cbf_rel_degree = cbf_rel_degree
         self.cbf = cbf
@@ -131,6 +132,8 @@ class ClassKNN(torch.nn.Module):
         u = torch.atleast_2d(u).to(self.device)
         # pass state through policy network
         u_hat = self.policy_nn(x)
+        if self.use_barrier_net:
+            u_hat =  self.barrier_layer(*self.compute_batched_hocbf_params(x, u_hat))
         # pass state through cbf network
         return u_hat, self.compute_batched_hocbf_params(x, u)
 
@@ -160,7 +163,7 @@ class ClassKNN(torch.nn.Module):
             for idx, cbf in enumerate(self.cbf):
                 # check relative degree of cbf (Obstacle type)
                 if idx == 0:
-                    barrier_fun = lambda x: cbf(x, self.x_obst.reshape(-1), self.r_obst)
+                    barrier_fun = lambda x: cbf(x, self.x_obst, self.r_obst)
                     h = torch.cat((x[i], self.x_obst.reshape(-1)), dim=0)
                     alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(h))
                     # alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(h))
