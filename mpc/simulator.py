@@ -200,8 +200,8 @@ def simulate_barriernet(
         t_range = range(n_steps - 1)
     for tstep in t_range:
         # Solve the MPC problem to get the next state
-        u_current = policy(x[tstep]).numpy()
-        u[tstep] = u_current
+        u_current = policy(x[tstep])
+        u[tstep] = np.squeeze(u_current)
 
         # Update the state using the dynamics. Integrate at a higher frequency using
         # zero-order hold controls

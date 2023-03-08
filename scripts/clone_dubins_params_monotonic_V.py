@@ -13,10 +13,7 @@ from mpc.costs import lqr_running_cost, squared_error_terminal_cost
 from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from mpc.mpc import construct_MPC_problem, solve_MPC_problem
 from mpc.obstacle_constraints import hypersphere_sdf
-from mpc.simulator import simulate_barriernet, simulate_mpc
-
-from src.clone.classknn_v import ClassKNN as PolicyCloningModel
-
+from mpc.simulator import simulate_barriernet
 
 # -------------------------------------------
 # DEFINE DEVICE
@@ -76,6 +73,13 @@ x0s = [
 # Define goal state
 x_goal = np.array([1.5, 0.001, 0.5, 0.0])
 
+# -------------------------------------------
+# DEFINE DEVICE
+# Define device
+if torch.cuda.is_available():
+    device = torch.device("cuda:0")
+else:
+    device = torch.device("cpu")
 
 
 def define_dubins_expert(x0, n_steps) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -130,8 +134,8 @@ def define_dubins_expert(x0, n_steps) -> Tuple[torch.Tensor, torch.Tensor]:
         control_bounds,
     )
 
-    # -------------------------------------------
-    # Simulate and return the results
+    # --------------- ----------------------------
+    # Wrap the MPC problem to accept a tensor input and tensor output
     # -------------------------------------------
     _,x,u = simulate_mpc(
         opti,
@@ -179,8 +183,8 @@ def clone_dubins_barrier_preferences(train=True, path = None):
         load_from_file=path,
     )
 
-    n_pts = int(0.7e4)
-    n_epochs = 500
+    n_pts = int(1e4)
+    n_epochs = 300
     learning_rate = 0.001
 
     # Define Training optimizer
@@ -191,7 +195,7 @@ def clone_dubins_barrier_preferences(train=True, path = None):
             n_pts,
             n_epochs,
             learning_rate,
-            batch_size=64,
+            batch_size=128,
             save_path=path,
             load_checkpoint=checkpoint,
             x_des=x_g,
@@ -246,7 +250,7 @@ def simulate_and_plot(policy):
 
     ax.set_xlim([-3., 2.5])
     ax.set_ylim([-1.0, 1.0])
-    ax.title.set_text("Cloned Dubins Car Policy with models BarrierNet")
+    ax.title.set_text("Cloned Dubins Car Policy with UMNN BarrierNet")
     ax.grid()
     ax.set_aspect("equal")
 
@@ -254,7 +258,7 @@ def simulate_and_plot(policy):
     # Save the figure in vector format using time stamp as name
     dir = os.path.dirname(__file__)
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pdf"
+    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy_with_v_transform_and_diff_qp.pdf"
     path = os.path.join(dir, file)
     plt.savefig(path)
     plt.show()
@@ -265,9 +269,9 @@ if __name__ == "__main__":
     # Define a file with the current date
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     file = "..\\data\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pt"
-    
     path = os.path.join(dir, file)
-    path = file = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\safety_transform\\data\\2023-03-02_00-20-45_dubins_cloned_barriernet_monotonic_policy.pt"
+    
+    # path = file = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\safety_transform\\data\\2023-03-02_00-20-45_dubins_cloned_barriernet_monotonic_policy.pt"
     # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-09_11-15-11_dubins_cloned_barriernet_monotonic_policy.pt"
     # Define the policy
     policy = clone_dubins_barrier_preferences(train=True, path= path)

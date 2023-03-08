@@ -61,6 +61,7 @@ x0s = [
     np.array([-2.0, -0.2, 0.0, 0.0]),
     np.array([-2.0, -0.5, 0.0, 0.0]),
     np.array([-1.0, 0, 0.0, 0.0]),
+    np.array([-1.0, 0, 0.0, 0.0]),
 ]
 # Define goal state
 x_goal = np.array([1.5, 0.001, 0.5, 0.0])
