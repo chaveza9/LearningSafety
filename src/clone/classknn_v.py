@@ -7,11 +7,11 @@ import torch
 import torch.nn as nn
 import numpy as np
 # Import local modules
-from src.BarrierNet.barriernet import BarrierNetLayer
-from src.models import MonotonicNN
+from models.hocbf.barriernet import BarrierNetLayer
+from models.UMNN import MonotonicNN
 from functorch import vmap, jacrev
 from tqdm import tqdm
-from functools import partial
+
 
 
 class ClassKNN(torch.nn.Module):
@@ -32,6 +32,7 @@ class ClassKNN(torch.nn.Module):
             r_obst: torch.Tensor,
             cbf_slack_weight: Optional[List[float]] = None,
             load_from_file: Optional[str] = None,
+            use_barrier_net: bool = True,
     ):
         """
         A model for cloning a policy.
@@ -50,7 +51,7 @@ class ClassKNN(torch.nn.Module):
             control_bounds: list of tuples of the form (min, max) for each control dimension
             preprocess_barrier_input_fn: function to preprocess the input to the barrier net (must construct matrices for clf and cbf constraints)
             load_from_file: path to a file to load the model from
-            
+
         """
         super(ClassKNN, self).__init__()
 
@@ -95,7 +96,7 @@ class ClassKNN(torch.nn.Module):
         #Includes obstacle position encoding
         self.mono1 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
         # self.mono2 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
-                
+        self.use_barrier_net = use_barrier_net
         self.n_cbf = len(cbf)
         self.cbf_rel_degree = cbf_rel_degree
         self.cbf = cbf
@@ -115,7 +116,7 @@ class ClassKNN(torch.nn.Module):
 
         # Define a vmap function for computing the lie derivative
         self.vmap_lie_derivative = \
-            vmap(self._compute_lie_derivative_1st_order, in_dims=(None, None, 0, 0), out_dims=(0,0))
+            vmap(self._compute_lie_derivative_1st_order, in_dims=(0, None, None), out_dims=(0,0,0))
 
         # Load the weights and biases if provided
         try:
@@ -131,8 +132,10 @@ class ClassKNN(torch.nn.Module):
         u = torch.atleast_2d(u).to(self.device)
         # pass state through policy network
         u_hat = self.policy_nn(x)
+        if self.use_barrier_net:
+            u_hat =  self.barrier_layer(*self.compute_batched_hocbf_params(x, u_hat))
         # pass state through cbf network
-        return u_hat, self.compute_hocbf_params(x, u)
+        return u_hat, self.compute_batched_hocbf_params(x, u)
 
     def eval_np(self, x: np.ndarray):
         # Construct the input to the barrier net
@@ -160,16 +163,16 @@ class ClassKNN(torch.nn.Module):
             for idx, cbf in enumerate(self.cbf):
                 # check relative degree of cbf (Obstacle type)
                 if idx == 0:
-                    barrier_fun = lambda x: cbf(x, self.x_obst.reshape(-1), self.r_obst)
+                    barrier_fun = lambda x: cbf(x, self.x_obst, self.r_obst)
                     h = torch.cat((x[i], self.x_obst.reshape(-1)), dim=0)
                     alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(h))
                     # alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(h))
-                    A_i, b_i = self._compute_lie_derivative_1st_order(x[i], barrier_fun, alpha_1)
+                    A_i, b_i, _ = self._compute_lie_derivative_1st_order(x[i], barrier_fun, alpha_1)
                     A_cbf[i, idx] = -A_i
                     b_cbf[i, idx] = b_i
                 elif self.cbf_rel_degree[idx] == 1:
                     alpha_1 = lambda psi: 1.0 * psi  # force gain of 1.0
-                    A_i, b_i = self._compute_lie_derivative_1st_order(x[i], cbf, alpha_1)
+                    A_i, b_i, _ = self._compute_lie_derivative_1st_order(x[i], cbf, alpha_1)
                     A_cbf[i, idx] = -A_i
                     b_cbf[i, idx] = b_i
         return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
@@ -182,18 +185,21 @@ class ClassKNN(torch.nn.Module):
 
         # Make sure that the input is a batch
         x = torch.atleast_2d(x).to(self.device)
+        batch_size = x.shape[0]
         for idx, cbf in enumerate(self.cbf):
             # check relative degree of cbf (Obstacle type)
             if idx == 0:
-                barrier_fun = partial(cbf, x_obst=self.x_obst, r_obst=self.r_obst)
-                h = torch.cat((x, self.x_obst.reshape(-1)), dim=0)
-                alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(h))
-                A_i, b_i = self.vmap_lie_derivative(x, barrier_fun, alpha_1)
+                barrier_fun = lambda x: cbf(x, self.x_obst, self.r_obst)
+                alpha_mock = lambda psi: psi*0.0
+                A_i, Lfb, psi0 = self.vmap_lie_derivative(x, barrier_fun, alpha_mock)
+                # Compute the class kappa function and barrier constraint
+                h = torch.cat((x, self.x_obst.repeat((x.shape[0], 1))), dim=1)
+                b_i = Lfb + self.mono1(torch.atleast_2d(psi0).T, h)
                 A_cbf[:, idx] = -A_i
                 b_cbf[:, idx] = b_i
-            elif self.cbf_rel_degree[idx] == 1:
+            else:
                 alpha_1 = lambda psi: 1.0 * psi  # force gain of 1.0
-                A_i, b_i = self.vmap_lie_derivative(x, cbf, alpha_1)
+                A_i, b_i, _ = self.vmap_lie_derivative(x, cbf, alpha_1)
                 A_cbf[:, idx] = -A_i
                 b_cbf[:, idx] = b_i
         return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
@@ -207,7 +213,7 @@ class ClassKNN(torch.nn.Module):
         Lgb = db_dx @ self._g()
         psi1 = Lfb + alpha_fun_1(psi0)
         # Compute the Lie derivative
-        return Lgb, psi1
+        return Lgb, psi1, psi0
 
     def _compute_lie_derivative_2nd_order_jacrev(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
                                           alpha_fun_2: Callable):
@@ -262,7 +268,7 @@ class ClassKNN(torch.nn.Module):
         # loss += beta1*torch.sum(torch.relu(-psi_n_1))
         # # saturation
         # loss += beta2*torch.sum(torch.relu(torch.tanh(psi_n_1)))
-            
+
         return loss/batch_size
 
     def clone(
@@ -374,5 +380,4 @@ class ClassKNN(torch.nn.Module):
                     'loss': loss_accumulated,
                 }, save_path)
                 curr_min_loss = loss_accumulated
-
 

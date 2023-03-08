@@ -9,11 +9,12 @@ import os, sys
 
 sys.path.append(os.path.abspath('../'))
 
-from src.mpc import lqr_running_cost, squared_error_terminal_cost
+from src.mpc.costs import lqr_running_cost, squared_error_terminal_cost
 from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from src.mpc import construct_MPC_problem
-from src.mpc import hypersphere_sdf
-from src.mpc import simulate_barriernet
+from src.mpc.mpc import construct_MPC_problem
+from src.mpc.obstacle_constraints import hypersphere_sdf
+from src.mpc.simulator import simulate_barriernet, simulate_mpc
+from src.clone.classknn_v import ClassKNN as PolicyCloningModel
 
 # -------------------------------------------
 # DEFINE DEVICE
