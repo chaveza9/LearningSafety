@@ -12,7 +12,6 @@ from src.models import MonotonicNN
 from functorch import vmap, jacrev
 from tqdm import tqdm
 
-
 class ClassKNN(torch.nn.Module):
     def __init__(
             self,

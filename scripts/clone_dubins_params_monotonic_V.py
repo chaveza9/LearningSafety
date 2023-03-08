@@ -16,6 +16,7 @@ from src.mpc.obstacle_constraints import hypersphere_sdf
 from src.mpc.simulator import simulate_barriernet, simulate_mpc
 from src.clone.classknn_v import ClassKNN as PolicyCloningModel
 
+
 # -------------------------------------------
 # DEFINE DEVICE
 # Define device
@@ -45,10 +46,11 @@ torch.set_default_dtype(torch.float64)
 # -------- Define Number of cbf and clf constraints --------
 n_cbf = 1  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
 torch.pi = torch.acos(torch.zeros(1)).item() * 2
-cv = 1/6*torch.pi
+cv = 2*torch.pi
 av_p = torch.tensor([0.21, 3.5]).to(device).requires_grad_(False)
-aV = lambda x, p: p[0]*x[3]**2+p[1]*(x[3]+cv)**2  
-distance_cbf = lambda x, x_obst, radius: (x[0] - x_obst[0])**2 + (x[1] - x_obst[1]) ** 2 - radius ** 2 - aV(x, av_p)
+aV = lambda x, p: p[0]*x[2]**2+p[1]*(x[3]+cv)**2
+distance_cbf =  lambda x, x_obst, r_obst: torch.squeeze(torch.square(x[0] - x_obst[0, 0]) + torch.square(
+                            x[1] - x_obst[0, 1]) - torch.square(r_obst) - aV(x, av_p))
 v_min_cbf = lambda x: x[2] - 0.01
 v_max_cbf = lambda x: 2 - x[2]
 cbf = [distance_cbf, v_min_cbf, v_max_cbf]
@@ -74,13 +76,6 @@ x0s = [
 # Define goal state
 x_goal = np.array([1.5, 0.001, 0.5, 0.0])
 
-# -------------------------------------------
-# DEFINE DEVICE
-# Define device
-if torch.cuda.is_available():
-    device = torch.device("cuda:0")
-else:
-    device = torch.device("cpu")
 
 
 def define_dubins_expert(x0, n_steps) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -135,8 +130,8 @@ def define_dubins_expert(x0, n_steps) -> Tuple[torch.Tensor, torch.Tensor]:
         control_bounds,
     )
 
-    # --------------- ----------------------------
-    # Wrap the MPC problem to accept a tensor input and tensor output
+    # -------------------------------------------
+    # Simulate and return the results
     # -------------------------------------------
     _,x,u = simulate_mpc(
         opti,
@@ -184,8 +179,8 @@ def clone_dubins_barrier_preferences(train=True, path = None):
         load_from_file=path,
     )
 
-    n_pts = int(1e4)
-    n_epochs = 300
+    n_pts = int(0.1e4)
+    n_epochs = 500
     learning_rate = 0.001
 
     # Define Training optimizer
@@ -259,8 +254,8 @@ def simulate_and_plot(policy):
     # Save the figure in vector format using time stamp as name
     dir = os.path.dirname(__file__)
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy_with_v_transform_and_diff_qp.pdf"
-    path = os.path.join(dir, file)
+    path = os.path.join(dir, "..", "figures", name
+                        + "_dubins_cloned_barriernet_monotonic_policy_with_v_transform_and_diff_qp.pdf")
     plt.savefig(path)
     plt.show()
 
@@ -269,11 +264,8 @@ if __name__ == "__main__":
     dir = os.path.dirname(__file__)
     # Define a file with the current date
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\data\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pt"
-    path = os.path.join(dir, file)
-    
-    # path = file = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\safety_transform\\data\\2023-03-02_00-20-45_dubins_cloned_barriernet_monotonic_policy.pt"
-    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-09_11-15-11_dubins_cloned_barriernet_monotonic_policy.pt"
+    # Define the path to the file
+    path = os.path.join(dir, "..", "data", name + "_dubins_cloned_barriernet_monotonic_policy.pt")
     # Define the policy
     policy = clone_dubins_barrier_preferences(train=True, path= path)
     simulate_and_plot(policy)

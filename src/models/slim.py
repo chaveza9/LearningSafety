@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
+# Adapted from PNNL's slim code https://github.com/pnnl/slim/blob/master/slim/linear.py
 class LinearBase(nn.Module, ABC):
     """
     Base class defining linear map interface.
@@ -79,3 +79,14 @@ class Linear(LinearBase):
 
     def forward(self, x):
         return self.linear(x)
+
+class NonNegativeLinear(LinearBase):
+    """
+    Positive parametrization of linear map via Relu.
+    """
+    def __init__(self, insize, outsize, bias=False, **kwargs):
+        super().__init__(insize, outsize, bias=bias, provide_weights=True)
+        self.weight = nn.Parameter(torch.abs(self.weight)*0.1)
+
+    def effective_W(self):
+        return F.relu(self.weight)

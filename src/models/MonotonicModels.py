@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
-import slim
-from activations import SoftExponential, ReHU
+from .slim import Linear, NonNegativeLinear
+from .activations import SoftExponential, ReHU
 
-
+# Source: https://github.com/pnnl/neuromancer/, https://github.com/AWehenkel/UMNN
 class MLP(nn.Module):
     """
     Multi-Layer Perceptron consistent with blocks interface
@@ -14,7 +14,7 @@ class MLP(nn.Module):
             insize,
             outsize,
             bias=True,
-            linear_map=slim.Linear,
+            linear_map=Linear,
             nonlin=SoftExponential,
             hsizes=[64],
             linargs=dict(),
@@ -67,7 +67,7 @@ class InputConvexNN(MLP):
                  insize,
                  outsize,
                  bias=True,
-                 linear_map=slim.Linear,
+                 linear_map=Linear,
                  nonlin=nn.ReLU,
                  hsizes=[64],
                  linargs=dict()
@@ -95,7 +95,7 @@ class InputConvexNN(MLP):
         )
         self.poslinear = nn.ModuleList(
             [
-                slim.NonNegativeLinear(sizes[k], sizes[k + 1], bias=False, **linargs)
+                NonNegativeLinear(sizes[k], sizes[k + 1], bias=False, **linargs)
                 for k in range(self.nhidden)
             ]
         )

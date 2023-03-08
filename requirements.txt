@@ -1,0 +1,13 @@
+casadi
+matplotlib
+numpy
+seaborn
+tqdm
+torch
+cvxpylayers
+
+[dev]
+black
+mypy
+pytest
+flake8
