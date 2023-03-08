@@ -1,27 +1,21 @@
 """Test the obstacle avoidance BarrierNetLayer for a dubins vehicle"""
-from typing import Callable, Tuple, List
+from typing import Callable
 
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import sys
 import os
-import dill
 import cvxpy as cp
-import warnings
 
 sys.path.append(os.path.abspath('..'))
 
-from NNet.converters.onnx2nnet import onnx2nnet
+from src.mpc import lqr_running_cost, squared_error_terminal_cost
+from src.mpc.dynamics_constraints import dubins_car_dynamics
+from src.mpc import construct_MPC_problem, solve_MPC_problem
+from src.mpc import hypersphere_sdf
+from src.mpc import simulate_barriernet
 
-from mpc.costs import lqr_running_cost, squared_error_terminal_cost
-from mpc.dynamics_constraints import dubins_car_dynamics
-from mpc.mpc import construct_MPC_problem, solve_MPC_problem
-from mpc.obstacle_constraints import hypersphere_sdf
-from mpc.simulator import simulate_barriernet
-
-from mpc.network_utils import pytorch_to_nnet
-from Models.mlpbarriernet import MLPBarrierNet
 from cvxpylayers.torch import CvxpyLayer
 
 n_states = 3

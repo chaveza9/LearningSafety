@@ -1,5 +1,5 @@
 """Test the obstacle avoidance MPC for a dubins vehicle"""
-from typing import Callable, Tuple, List
+from typing import Callable
 
 import numpy as np
 import torch
@@ -11,14 +11,14 @@ sys.path.append(os.path.abspath('..'))
 
 from NNet.converters.onnx2nnet import onnx2nnet
 
-from mpc.costs import lqr_running_cost, squared_error_terminal_cost
-from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from mpc.mpc import construct_MPC_problem, solve_MPC_problem
-from mpc.obstacle_constraints import hypersphere_sdf
-from mpc.simulator import simulate_nn
+from src.mpc import lqr_running_cost, squared_error_terminal_cost
+from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
+from src.mpc import construct_MPC_problem, solve_MPC_problem
+from src.mpc import hypersphere_sdf
+from src.mpc import simulate_nn
 
-from mpc.network_utils import pytorch_to_nnet
-from mpc.nn import PolicyCloningModel
+from src.mpc import pytorch_to_nnet
+from src.mpc import PolicyCloningModel
 
 n_states = 4
 n_controls = 2

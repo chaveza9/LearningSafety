@@ -5,8 +5,8 @@ import casadi
 import numpy as np
 from tqdm import tqdm
 
-from mpc.dynamics_constraints import DynamicsFunction
-from mpc.mpc import solve_MPC_problem
+from src.mpc.dynamics_constraints import DynamicsFunction
+from src.mpc.mpc import solve_MPC_problem
 
 
 def simulate_mpc(

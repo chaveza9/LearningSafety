@@ -1,13 +1,9 @@
 import torch
 import numpy as np
-import matplotlib.pyplot as plt
 
-from typing import Callable, Tuple, List, Dict, Optional
-from mpc.simulator import simulate_barriernet, simulate_mpc
-from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from mpc.costs import lqr_running_cost, squared_error_terminal_cost
-from mpc.mpc import construct_MPC_problem
-from mpc.obstacle_constraints import hypersphere_sdf
+from typing import Callable, Tuple, List, Optional
+
+
 # -------------------------------------------
 # DEFINE LIE DERIVATIVE AUTODIFF FUNCTIONS
 def compute_lie_derivative_2nd_order(x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable, alpha_fun_2: Callable, f, g):
@@ -188,12 +184,12 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
-from typing import Callable, Tuple, List, Dict, Optional
-from mpc.simulator import simulate_barriernet, simulate_mpc
-from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from mpc.costs import lqr_running_cost, squared_error_terminal_cost
-from mpc.mpc import construct_MPC_problem
-from mpc.obstacle_constraints import hypersphere_sdf
+from typing import Callable, Tuple, List, Optional
+from src.mpc import simulate_barriernet, simulate_mpc
+from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
+from src.mpc import lqr_running_cost, squared_error_terminal_cost
+from src.mpc import construct_MPC_problem
+from src.mpc import hypersphere_sdf
 # -------------------------------------------
 # DEFINE LIE DERIVATIVE AUTODIFF FUNCTIONS
 def compute_lie_derivative_2nd_order(x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable, alpha_fun_2: Callable, f, g):

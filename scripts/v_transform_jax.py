@@ -1,10 +1,10 @@
 """Test the obstacle avoidance BarrierNetLayer for a dubins vehicle"""
-from typing import Callable, Tuple, List, Dict, Optional
+from typing import Callable, List, Dict, Optional
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from mpc.simulator import simulate_barriernet
+from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
+from src.mpc import simulate_barriernet
 from functools import partial
 import os, sys
 # Add the parent directory to the path

@@ -4,12 +4,12 @@ from typing import Any, Dict, List, Tuple, Optional
 import casadi
 import numpy as np
 
-from mpc.costs import RunningCostFunction, TerminalCostFunction
-from mpc.dynamics_constraints import (
+from src.mpc.costs import RunningCostFunction, TerminalCostFunction
+from src.mpc.dynamics_constraints import (
     add_dynamics_constraints,
     DynamicsFunction,
 )
-from mpc.obstacle_constraints import (
+from src.mpc.obstacle_constraints import (
     make_obstacle_cost,
     ObstacleFunction,
 )

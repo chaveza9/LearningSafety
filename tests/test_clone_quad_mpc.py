@@ -9,17 +9,17 @@ sys.path.append(os.path.abspath('..'))
 
 from NNet.converters.onnx2nnet import onnx2nnet
 
-from mpc.costs import (
+from src.mpc import (
     lqr_running_cost,
     distance_travelled_terminal_cost,
 )
-from mpc.dynamics_constraints import quad6d_dynamics
-from mpc.mpc import construct_MPC_problem, solve_MPC_problem
-from mpc.obstacle_constraints import hypersphere_sdf
-from mpc.simulator import simulate_nn
-from mpc.network_utils import pytorch_to_nnet
+from src.mpc.dynamics_constraints import quad6d_dynamics
+from src.mpc import construct_MPC_problem, solve_MPC_problem
+from src.mpc import hypersphere_sdf
+from src.mpc import simulate_nn
+from src.mpc import pytorch_to_nnet
 
-from mpc.nn import PolicyCloningModel
+from src.mpc import PolicyCloningModel
 
 
 radius = 1.0

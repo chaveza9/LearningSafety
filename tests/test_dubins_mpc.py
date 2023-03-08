@@ -9,11 +9,11 @@ import datetime
 sys.path.append(os.path.abspath('..'))
 
 
-from mpc.costs import lqr_running_cost, squared_error_terminal_cost
-from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from mpc.mpc import construct_MPC_problem
-from mpc.obstacle_constraints import hypersphere_sdf
-from mpc.simulator import simulate_mpc
+from src.mpc import lqr_running_cost, squared_error_terminal_cost
+from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
+from src.mpc import construct_MPC_problem
+from src.mpc import hypersphere_sdf
+from src.mpc import simulate_mpc
 
 
 def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:

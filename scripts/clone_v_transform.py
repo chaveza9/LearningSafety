@@ -15,7 +15,7 @@ sys.path.append(os.path.abspath('..'))
 from src.models import MLP
 from src.models.MonotonicNN import MonotonicNN
 from src.BarrierNet.barriernet import BarrierNetLayer
-from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
+from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from utils import compute_lie_derivative_1st_order, simulate_and_plot, define_dubins_expert
 
 # -------------------------------------------

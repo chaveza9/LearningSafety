@@ -7,15 +7,14 @@ import sys
 import os
 sys.path.append(os.path.abspath(''))
 
-from mpc.costs import (
+from src.mpc import (
     lqr_running_cost,
     distance_travelled_terminal_cost,
-    squared_error_terminal_cost,
 )
-from mpc.dynamics_constraints import quad6d_dynamics
-from mpc.mpc import construct_MPC_problem
-from mpc.obstacle_constraints import hypersphere_sdf
-from mpc.simulator import simulate_mpc
+from src.mpc.dynamics_constraints import quad6d_dynamics
+from src.mpc import construct_MPC_problem
+from src.mpc import hypersphere_sdf
+from src.mpc import simulate_mpc
 
 
 radius = 1.0

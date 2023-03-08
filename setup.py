@@ -8,6 +8,8 @@ requirements = [
     "numpy",
     "seaborn",
     "tqdm",
+    "torch",
+    "cvxpylayers",
 ]
 
 dev_requirements = [
@@ -18,12 +20,12 @@ dev_requirements = [
 ]
 
 setup(
-    name="mpc",
+    name="LearningBasedSafety",
     version="0.0.0",
-    description="Simple nonlinear MPC for obstacle avoidance",
-    author="Charles Dawson",
-    author_email="cbd@mit.edu",
-    url="https://github.com/dawsonc/obstacle_avoidance_mpc",
+    description="Safe control of dynamical systems using learning-based methods.",
+    author="Andres Chavez Armijos",
+    author_email="aschavez@bu.edu",
+    url="",
     install_requires=requirements,
     extras_require={"dev": dev_requirements},
     packages=find_packages(),

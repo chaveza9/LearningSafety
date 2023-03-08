@@ -1,19 +1,18 @@
 """Test the obstacle avoidance BarrierNetLayer for a dubins vehicle"""
-from typing import Callable, Tuple, List
+from typing import List
 
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import sys
 import os
-import dill
 import cvxpy as cp
 import warnings
 
 sys.path.append(os.path.abspath('..'))
 
-from mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from mpc.simulator import simulate_barriernet
+from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
+from src.mpc import simulate_barriernet
 
 # from src.BarrierNet.barriernet import MLPBarrierNet
 from cvxpylayers.torch import CvxpyLayer
