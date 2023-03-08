@@ -9,16 +9,17 @@ import os
 
 sys.path.append(os.path.abspath('..'))
 
-from NNet.converters.onnx2nnet import onnx2nnet
 
-from src.mpc import lqr_running_cost, squared_error_terminal_cost
+
 from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from src.mpc import construct_MPC_problem, solve_MPC_problem
-from src.mpc import hypersphere_sdf
-from src.mpc import simulate_nn
-
-from src.mpc import pytorch_to_nnet
-from src.mpc import PolicyCloningModel
+from src.mpc.costs import (
+    lqr_running_cost,
+    squared_error_terminal_cost,
+)
+from src.mpc.mpc import construct_MPC_problem, solve_MPC_problem
+from src.mpc.obstacle_constraints import hypersphere_sdf
+from src.mpc.simulator import simulate_nn
+from src.mpc.nn import PolicyCloningModel
 
 n_states = 4
 n_controls = 2
@@ -115,7 +116,6 @@ def clone_dubins_mpc(train = True):
         n_states,
         n_controls,
         state_space,
-        # load_from_file="mpc/tests/data/cloned_quad_policy_weight_decay.pth",
     )
 
     n_pts = int(1e4)
@@ -128,7 +128,7 @@ def clone_dubins_mpc(train = True):
             n_pts,
             n_epochs,
             learning_rate,
-            save_path="./data/cloned_dubins_policy_weight_decay.pth",
+            save_path="../data/cloned_dubins_policy_weight_decay.pth",
         )
 
     return cloned_policy
@@ -194,20 +194,7 @@ def simulate_and_plot(policy):
 
     plt.show()
 
-def save_to_onnx(policy):
-    """Save to an onnx file"""
-    save_path = os.path.abspath('./data')+"/cloned_dubins_policy_weight_decay.onnx"
-    pytorch_to_nnet(policy, n_states, n_controls, save_path)
-
-    input_mins = [state_range[0] for state_range in state_space]
-    input_maxes = [state_range[1] for state_range in state_space]
-    means = [0.5 * (state_range[0] + state_range[1]) for state_range in state_space]
-    means += [0.0]
-    ranges = [state_range[1] - state_range[0] for state_range in state_space]
-    ranges += [1.0]
-    onnx2nnet(save_path, input_mins, input_maxes, means, ranges)
 
 if __name__ == "__main__":
     policy = clone_dubins_mpc(train=True)
-    save_to_onnx(policy)
     simulate_and_plot(policy)

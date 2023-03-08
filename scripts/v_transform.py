@@ -10,10 +10,9 @@ import copy
 from functorch import vmap, jacrev
 from functools import partial
 
-sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.abspath('./src/'))
 from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from src.mpc import simulate_barriernet
-
+from src.mpc.simulator import simulate_barriernet
 from src.BarrierNet.barriernet import CLFBarrierNetLayer
 
 

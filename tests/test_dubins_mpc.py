@@ -9,11 +9,11 @@ import datetime
 sys.path.append(os.path.abspath('..'))
 
 
-from src.mpc import lqr_running_cost, squared_error_terminal_cost
+from src.mpc.costs import lqr_running_cost, squared_error_terminal_cost
 from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from src.mpc import construct_MPC_problem
-from src.mpc import hypersphere_sdf
-from src.mpc import simulate_mpc
+from src.mpc.mpc import construct_MPC_problem
+from src.mpc.obstacle_constraints import hypersphere_sdf
+from src.mpc.simulator import simulate_mpc
 
 
 def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -124,12 +124,6 @@ def run_and_plot_dubins_mpc():
     ax.set_aspect("equal")
 
     ax.legend()
-    # Save the figure in vector format using time stamp as name
-    dir = os.path.dirname(__file__)
-    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\figures\\" + name + "_mpc_policy_Expert.pdf"
-    path = os.path.join(dir, file)
-    plt.savefig(path)
 
     plt.show()
 

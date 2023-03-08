@@ -7,19 +7,15 @@ import os
 sys.path.append(os.path.abspath('..'))
 
 
-from NNet.converters.onnx2nnet import onnx2nnet
-
-from src.mpc import (
+from src.mpc.costs import (
     lqr_running_cost,
     distance_travelled_terminal_cost,
 )
 from src.mpc.dynamics_constraints import quad6d_dynamics
-from src.mpc import construct_MPC_problem, solve_MPC_problem
-from src.mpc import hypersphere_sdf
-from src.mpc import simulate_nn
-from src.mpc import pytorch_to_nnet
-
-from src.mpc import PolicyCloningModel
+from src.mpc.mpc import construct_MPC_problem, solve_MPC_problem
+from src.mpc.obstacle_constraints import hypersphere_sdf
+from src.mpc.simulator import simulate_nn
+from src.mpc.nn import PolicyCloningModel
 
 
 radius = 1.0
@@ -56,10 +52,11 @@ def define_quad_mpc_expert():
         x, u, x_goal, dt * np.diag([0.0, 0.0, 0.0, 0.1, 0.1, 0.1]), 1 * np.eye(3)
     )
     terminal_cost_fn = lambda x: distance_travelled_terminal_cost(x, goal_direction)
-    # terminal_cost_fn = lambda x: squared_error_terminal_cost(x, x_goal)
 
     # Define control bounds
-    control_bounds = [np.pi / 10, np.pi / 10, 2.0]
+    control_bounds = [(-np.pi / 10, np.pi / 10),
+                      (-np.pi / 10, np.pi / 10),
+                      (-2., 2.)]
 
     # Define MPC problem
     opti, x0_variables, u0_variables, x_variables, u_variables = construct_MPC_problem(
@@ -199,21 +196,7 @@ def simulate_and_plot(policy):
     plt.show()
 
 
-def save_to_onnx(policy):
-    """Save to an onnx file"""
-    save_path = os.path.abspath('./data')+"/cloned_quad_policy_weight_decay.onnx"
-    pytorch_to_nnet(policy, n_states, n_controls, save_path)
-
-    input_mins = [state_range[0] for state_range in state_space]
-    input_maxes = [state_range[1] for state_range in state_space]
-    means = [0.5 * (state_range[0] + state_range[1]) for state_range in state_space]
-    means += [0.0]
-    ranges = [state_range[1] - state_range[0] for state_range in state_space]
-    ranges += [1.0]
-    onnx2nnet(save_path, input_mins, input_maxes, means, ranges)
-
 
 if __name__ == "__main__":
     policy = clone_quad_mpc(train=True)
-    save_to_onnx(policy)
     simulate_and_plot(policy)

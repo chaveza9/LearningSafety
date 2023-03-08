@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
   <a href="https://github.com/chaveza9/Learning Safety Feasibility Guaranteed Safety Preferences ">
-    <img src="https://drive.google.com/file/d/1Cu_ZldPnI_a6xm5fK2iwVQ2XGCXOWa4G/view?usp=sharing" alt="Logo" width="80" height="80">
+    <img src="./images/logo.jpg" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">Learning Feasibility Guaranteed Safety Preferences </h3>
@@ -11,7 +11,7 @@
     <br/>
     <br/>
   </p>
-</p>
+
 
 ## About The Project
 

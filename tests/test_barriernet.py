@@ -12,7 +12,7 @@ import warnings
 sys.path.append(os.path.abspath('..'))
 
 from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from src.mpc import simulate_barriernet
+from src.mpc.simulator import simulate_barriernet
 
 # from src.BarrierNet.barriernet import MLPBarrierNet
 from cvxpylayers.torch import CvxpyLayer
