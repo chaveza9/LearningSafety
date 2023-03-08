@@ -1,6 +1,2 @@
-from .UMNNMAFFlow import UMNNMAFFlow
-from .MonotonicNN import MonotonicNN, IntegrandNN
-from .UMNNMAF import IntegrandNetwork, UMNNMAF
-from .made import MADE
-from .NeuralIntegral import NeuralIntegral
-from .ParallelNeuralIntegral import ParallelNeuralIntegral
+from MonotonicModels import PosDefICNN, MLP, InputConvexNN
+from MonotonicNN import MonotonicNN

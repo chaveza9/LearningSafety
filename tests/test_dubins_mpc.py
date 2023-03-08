@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
+import datetime
 sys.path.append(os.path.abspath('..'))
 
 
@@ -35,7 +36,7 @@ def test_dubins_mpc(x0: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
     obstacle_fns = [(lambda x: hypersphere_sdf(x, radius, [0, 1], center), margin)]
 
     # Define costs
-    x_goal = np.array([1.0, 0.0, 0.5, 0.0])
+    x_goal = np.array([1.5, 0.0, 0.5, 0.0])
     running_cost_fn = lambda x, u: lqr_running_cost(
         x, u, x_goal, dt * np.diag([1.0, 1.0, 0.1, 0.0]), 0.01 * np.eye(2)
     )
@@ -117,10 +118,18 @@ def run_and_plot_dubins_mpc():
 
     ax.set_xlim([-3.5, 2])
     ax.set_ylim([-1.0, 1.0])
+    ax.grid(True, which="both")
+    ax.title.set_text("MPC Expert Policy Comparison")
 
     ax.set_aspect("equal")
 
     ax.legend()
+    # Save the figure in vector format using time stamp as name
+    dir = os.path.dirname(__file__)
+    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file = "..\\figures\\" + name + "_mpc_policy_Expert.pdf"
+    path = os.path.join(dir, file)
+    plt.savefig(path)
 
     plt.show()
 

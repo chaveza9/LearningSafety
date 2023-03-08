@@ -16,7 +16,7 @@ from mpc.mpc import construct_MPC_problem, solve_MPC_problem
 from mpc.obstacle_constraints import hypersphere_sdf
 from mpc.simulator import simulate_barriernet, simulate_mpc
 
-from models.clone.mlpparameteric import ClassKNN as PolicyCloningModel
+from src.clone.mlpparameteric import ClassKNN as PolicyCloningModel
 
 
 # -------------------------------------------
@@ -57,7 +57,7 @@ x0s = [
     np.array([-2.0, 0.1, 0.0, 0.0]),
     np.array([-2.0, 0.2, 0.0, 0.0]),
     np.array([-2.0, 0.5, 0.0, 0.0]),
-    np.array([-1.0, -0.1, 0.0, 0.0]),
+    np.array([-1.0, 0, 0.0, 0.0]),
     np.array([-2.0, -0.2, 0.0, 0.0]),
     np.array([-2.0, -0.5, 0.0, 0.0]),
 ]
@@ -247,6 +247,13 @@ def simulate_and_plot(policy):
     ax.set_aspect("equal")
 
     ax.legend()
+    # Save the figure in vector format using time stamp as name
+    dir = os.path.dirname(__file__)
+    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_mlp_policy_with_qp.pdf"
+
+    path = os.path.join(dir, file)
+    plt.savefig(path)
     plt.show()
     # plt.savefig('comparison_run.png')
 
@@ -256,9 +263,8 @@ if __name__ == "__main__":
     dir = os.path.dirname(__file__)
     # Define a file with the current date
     name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\data\\" + name + "_dubins_cloned_parametric_policy_with_qp.pt"
+    file = "..\\data\\" + name + "_dubins_cloned_parametric_policy_no_qp_lower_mse.pt"
     path = os.path.join(dir, file)
-    # path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-07_19-06-00_dubins_cloned_parametric_policy_no_qp.pt"
     # Define the policy
     policy = clone_dubins_barrier_preferences(train=True, path= path)
     simulate_and_plot(policy)

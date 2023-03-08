@@ -8,8 +8,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 # Import local modules
-from models.hocbf.barriernet import BarrierNetLayer
-from models.UMNN import MonotonicNN
+from src.BarrierNet.barriernet import BarrierNetLayer
+from src.models import MonotonicNN
 from functorch import vmap, jacrev
 
 from tqdm import tqdm

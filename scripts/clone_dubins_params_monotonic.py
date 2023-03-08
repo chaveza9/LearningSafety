@@ -16,7 +16,7 @@ from mpc.mpc import construct_MPC_problem, solve_MPC_problem
 from mpc.obstacle_constraints import hypersphere_sdf
 from mpc.simulator import simulate_barriernet, simulate_mpc
 
-from models.clone.classknn import ClassKNN as PolicyCloningModel
+from src.clone.classknn import ClassKNN as PolicyCloningModel
 
 
 # -------------------------------------------
@@ -60,6 +60,7 @@ x0s = [
     np.array([-2.0, -0.1, 0.0, 0.0]),
     np.array([-2.0, -0.2, 0.0, 0.0]),
     np.array([-2.0, -0.5, 0.0, 0.0]),
+    np.array([-1.0, 0, 0.0, 0.0]),
 ]
 # Define goal state
 x_goal = np.array([1.5, 0.001, 0.5, 0.0])
@@ -241,7 +242,7 @@ def simulate_and_plot(policy):
 
     ax.set_xlim([-3., 2.5])
     ax.set_ylim([-1.0, 1.0])
-    ax.title.set_text("Cloned Dubins Car Policy with UMNN BarrierNet")
+    ax.title.set_text("Cloned Dubins Car Policy with models BarrierNet")
     ax.grid()
     ax.set_aspect("equal")
 
@@ -264,5 +265,5 @@ if __name__ == "__main__":
 
     path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-09_11-15-11_dubins_cloned_barriernet_monotonic_policy.pt"
     # Define the policy
-    policy = clone_dubins_barrier_preferences(train=True, path= path)
+    policy = clone_dubins_barrier_preferences(train=False, path= path)
     simulate_and_plot(policy)
