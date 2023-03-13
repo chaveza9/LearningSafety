@@ -8,7 +8,7 @@ import torch.nn as nn
 import numpy as np
 # Import local modules
 from src.BarrierNet.barriernet import BarrierNetLayer
-from src.models import MonotonicNN
+from src.models import MonotonicNN, PosDefICNN, InputConvexNN
 from functorch import vmap, jacrev
 from tqdm import tqdm
 
@@ -33,6 +33,7 @@ class ClassKNN(torch.nn.Module):
             cbf_slack_weight: Optional[List[float]] = None,
             load_from_file: Optional[str] = None,
             use_barrier_net: bool = True,
+            monotonic_type: str = "umnn",
     ):
         """
         A model for cloning a policy.
@@ -94,7 +95,12 @@ class ClassKNN(torch.nn.Module):
         # ----------------- Construct CBF Network -----------------
         # Monotonically increasing neural network for relative degree 2
         #Includes obstacle position encoding
-        self.mono1 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
+        if monotonic_type == "umnn":
+            self.mono1 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
+        elif monotonic_type == "icnn":
+            self.mono1 = PosDefICNN(insize=self.n_state_dims+2+1, outsize=1, hsizes = [hidden_layer_width]*hidden_layers).to(self.device)
+        else:
+            raise NotImplementedError
         # self.mono2 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
         self.use_barrier_net = use_barrier_net
         self.n_cbf = len(cbf)

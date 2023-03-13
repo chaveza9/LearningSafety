@@ -8,9 +8,11 @@ import torch.nn as nn
 import numpy as np
 # Import local modules
 from src.BarrierNet.barriernet import BarrierNetLayer
-from src.models import MonotonicNN
-from functorch import vmap, jacrev
+from src.models import MonotonicNN, PosDefICNN, InputConvexNN
+from functorch import vmap, jacrev, hessian
 from tqdm import tqdm
+
+
 
 class ClassKNN(torch.nn.Module):
     def __init__(
@@ -30,6 +32,8 @@ class ClassKNN(torch.nn.Module):
             r_obst: torch.Tensor,
             cbf_slack_weight: Optional[List[float]] = None,
             load_from_file: Optional[str] = None,
+            use_barrier_net: bool = True,
+            monotonic_type: str = "umnn",
     ):
         """
         A model for cloning a policy.
@@ -48,7 +52,7 @@ class ClassKNN(torch.nn.Module):
             control_bounds: list of tuples of the form (min, max) for each control dimension
             preprocess_barrier_input_fn: function to preprocess the input to the barrier net (must construct matrices for clf and cbf constraints)
             load_from_file: path to a file to load the model from
-            
+
         """
         super(ClassKNN, self).__init__()
 
@@ -91,9 +95,17 @@ class ClassKNN(torch.nn.Module):
         # ----------------- Construct CBF Network -----------------
         # Monotonically increasing neural network for relative degree 2
         #Includes obstacle position encoding
-        self.mono1 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
-        self.mono2 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
-                
+        if monotonic_type == "umnn":
+            self.mono1 = MonotonicNN(self.n_state_dims+2+1, [hidden_layer_width]*hidden_layers, nb_steps=50, dev=self.device).to(self.device)
+            self.mono2 = MonotonicNN(self.n_state_dims + 2 + 1, [hidden_layer_width] * hidden_layers, nb_steps=50,
+                                     dev=self.device).to(self.device)
+        elif monotonic_type == "icnn":
+            self.mono1 = PosDefICNN(insize=self.n_state_dims+2+1, outsize=1, hsizes = [hidden_layer_width]*hidden_layers).to(self.device)
+            self.mono2 = PosDefICNN(insize=self.n_state_dims + 2 + 1, outsize=1, hsizes=[hidden_layer_width] * hidden_layers).to(self.device)
+        else:
+            raise NotImplementedError
+        self.monotonic_type = monotonic_type
+        self.use_barrier_net = use_barrier_net
         self.n_cbf = len(cbf)
         self.cbf_rel_degree = cbf_rel_degree
         self.cbf = cbf
@@ -111,6 +123,12 @@ class ClassKNN(torch.nn.Module):
             device=self.device,
         )
 
+        # Define a vmap function for computing the lie derivative
+        self.vmap_lie_derivative_1st_order = \
+            vmap(self._compute_lie_derivative_1st_order, in_dims=(0, None, None), out_dims=(0,0,0))
+        self.vmap_lie_derivative_2nd_order = \
+            vmap(self._compute_lie_derivative_2nd_order_jacrev, in_dims=(0, None, None, None, None), out_dims=(0,0,0))
+
         # Load the weights and biases if provided
         try:
             if load_from_file is not None:
@@ -125,8 +143,16 @@ class ClassKNN(torch.nn.Module):
         u = torch.atleast_2d(u).to(self.device)
         # pass state through policy network
         u_hat = self.policy_nn(x)
+        if self.monotonic_type == "umnn":
+            barrier_params = self.compute_hocbf_params
+        elif self.monotonic_type == "icnn":
+            barrier_params = self.compute_batched_hocbf_params
+        else:
+            raise NotImplementedError
+        if self.use_barrier_net:
+            u_hat =  self.barrier_layer(*barrier_params(x, u_hat))
         # pass state through cbf network
-        return u_hat, self.compute_hocbf_params(x, u)
+        return u_hat, barrier_params(x, u)
 
     def eval_np(self, x: np.ndarray):
         # Construct the input to the barrier net
@@ -153,47 +179,73 @@ class ClassKNN(torch.nn.Module):
         for i in range(x.shape[0]):
             for idx, cbf in enumerate(self.cbf):
                 # check relative degree of cbf (Obstacle type)
-                if self.cbf_rel_degree[idx] == 2:
-                    barrier_fun = lambda x: cbf(x, self.x_obst.reshape(-1), self.r_obst)
+                if idx == 0:
+                    barrier_fun = lambda x: cbf(x, self.x_obst, self.r_obst)
                     h = torch.cat((x[i], self.x_obst.reshape(-1)), dim=0)
                     alpha_1 = lambda psi: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(h))
                     alpha_2 = lambda psi: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(h))
-                    A_i, b_i, psi = self._compute_lie_derivative_2nd_order(x[i], barrier_fun, alpha_1, alpha_2)
+                    A_i, b_i, _ = self._compute_lie_derivative_2nd_order(x, barrier_fun, alpha_1, alpha_2)
                     A_cbf[i, idx] = -A_i
                     b_cbf[i, idx] = b_i
                 elif self.cbf_rel_degree[idx] == 1:
                     alpha_1 = lambda psi: 1.0 * psi  # force gain of 1.0
-                    A_i, b_i = self._compute_lie_derivative_1st_order(x[i], cbf, alpha_1)
+                    A_i, b_i, _ = self._compute_lie_derivative_1st_order(x[i], cbf, alpha_1)
                     A_cbf[i, idx] = -A_i
                     b_cbf[i, idx] = b_i
         return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
 
+    def compute_batched_hocbf_params(self, x: torch.Tensor, u_ref: torch.Tensor):
+        # Compute CBF parameters
+        A_cbf = torch.zeros(self.n_cbf, self.n_control_dims).repeat(x.shape[0], 1, 1).to(self.device)
+        b_cbf = torch.zeros(self.n_cbf, 1).repeat(x.shape[0], 1, 1).to(self.device)
+        # Iterate over each cbf over each state
+
+        # Make sure that the input is a batch
+        x = torch.atleast_2d(x).to(self.device)
+        batch_size = x.shape[0]
+        for idx, cbf in enumerate(self.cbf):
+            # check relative degree of cbf (Obstacle type)
+            if idx == 0:
+                barrier_fun = lambda x: cbf(x, self.x_obst, self.r_obst)
+                h = lambda x: torch.cat((x, torch.squeeze(self.x_obst)), dim=0)
+                alpha_1 = lambda psi, h: self.mono1(torch.atleast_2d(psi), torch.atleast_2d(h))
+                alpha_2 = lambda psi, h: self.mono2(torch.atleast_2d(psi), torch.atleast_2d(h))
+                A_i, b_i, _ = self.vmap_lie_derivative_2nd_order(x, barrier_fun, alpha_1, alpha_2, h)
+            else:
+                alpha_1 = lambda psi: 1.0 * psi  # force gain of 1.0
+                A_i, b_i, _ = self.vmap_lie_derivative_1st_order(x, cbf, alpha_1)
+            # Store the results and construct the batched CBF parameters
+            A_cbf[:, idx] = -A_i.reshape((batch_size, self.n_control_dims))
+            b_cbf[:, idx] = b_i.reshape((batch_size, 1))
+        return u_ref.reshape((x.shape[0], self.n_control_dims, 1)), A_cbf, b_cbf
+
     def _compute_lie_derivative_1st_order(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable):
         """Compute the Lie derivative of the CBF wrt the dynamics"""
-        # Make sure the input requires gradient
-        x.requires_grad_(True)
         # Compute the CBF
         psi0 = barrier_fun(x)
-        db_dx = torch.autograd.grad(psi0, x, create_graph=True, retain_graph=True)[0]
+        db_dx = jacrev(barrier_fun)(x)
         Lfb = db_dx @ self._f(x)
         Lgb = db_dx @ self._g()
         psi1 = Lfb + alpha_fun_1(psi0)
-
         # Compute the Lie derivative
-        return Lgb, psi1
+        return Lgb, psi1, psi0
 
-    def _compute_lie_derivative_2nd_order_jacrev(self, x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
-                                          alpha_fun_2: Callable):
-        psi0 = barrier_fun(x)
-        Lfb = lambda x: jacrev(barrier_fun)(x) @ self._f(x)
+    def _compute_lie_derivative_2nd_order_jacrev(self, x: torch.Tensor, psi0: Callable, alpha_fun_1: Callable,
+                                                 alpha_fun_2: Callable, embedding: Callable):
+        """Compute the Lie derivative of the CBF wrt the dynamics"""
+        # compute appropriate embedding
+        h = embedding(x)
+        Lfb = lambda x: jacrev(psi0)(x) @ self._f(x)
+
         db2_dx = jacrev(Lfb)(x)
+
         Lf2b = db2_dx @ self._f(x)
         LgLfb = db2_dx @ self._g()
 
-        psi1 = lambda x: Lfb(x) + alpha_fun_1(psi0)
+        psi1 = lambda x: Lfb(x) + alpha_fun_1(psi0(x), h)
         psi1_dot = jacrev(psi1)(x) @ self._f(x)
 
-        psi2 = psi1_dot + alpha_fun_2(psi1(x))
+        psi2 = psi1_dot + alpha_fun_2(psi1(x), h)
 
         return LgLfb, Lf2b + psi2, psi1(x)
 
@@ -235,7 +287,7 @@ class ClassKNN(torch.nn.Module):
         # loss += beta1*torch.sum(torch.relu(-psi_n_1))
         # # saturation
         # loss += beta2*torch.sum(torch.relu(torch.tanh(psi_n_1)))
-            
+
         return loss/batch_size
 
     def clone(
@@ -347,5 +399,4 @@ class ClassKNN(torch.nn.Module):
                     'loss': loss_accumulated,
                 }, save_path)
                 curr_min_loss = loss_accumulated
-
 

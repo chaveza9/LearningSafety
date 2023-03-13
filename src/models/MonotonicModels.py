@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from typing import Optional
 from .slim import Linear, NonNegativeLinear
 from .activations import SoftExponential, ReHU
 
@@ -146,12 +147,30 @@ class PosDef(nn.Module):
             z = z - torch.relu(z - self.max)
         return z
 
-class PosDefICNN(InputConvexNN):
+class PosDefICNN(nn.Module):
     """ Creates a positive definite ICNN. (Class Kappa function) """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.posdef = PosDef(self)
+    def __init__(self,
+                 insize,
+                 outsize,
+                 bias=True,
+                 linear_map=Linear,
+                 nonlin=nn.ReLU,
+                 hsizes=[64],
+                 linargs=dict(),
+                 max=None, eps=0.01, d=1.0
+                 ):
+        super().__init__()
+        g = InputConvexNN(insize,
+            outsize,
+            bias=bias,
+            linear_map=linear_map,
+            nonlin=nonlin,
+            hsizes=hsizes,
+            linargs=linargs)
+        self.posdef = PosDef(g, max, eps, d)
 
-    def forward(self, x):
+    def forward(self, x, h: Optional[torch.Tensor] = None):
+        if h is not None:
+            x = torch.cat([x, h], dim=1)
         return self.posdef(x)

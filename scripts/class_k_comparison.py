@@ -11,7 +11,8 @@ import copy
 
 sys.path.append(os.path.abspath('..'))
 from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
-from src.mpc import simulate_barriernet
+from src.mpc.simulator import simulate_barriernet
+from functorch import jacrev, hessian
 
 from src.BarrierNet.barriernet import CLFBarrierNetLayer
 
@@ -86,7 +87,7 @@ def compute_parameters_clf_hocbf(x: torch.Tensor,
             alpha1 = lambda x: cbf['alpha'][0](x, p1)
             alpha2 = lambda x: cbf['alpha'][1](x, p2)
             # Compute CBF constraint
-            G, F, _ = _compute_lie_derivative_2nd_order(x, barrier_fun= barrier_function, alpha_fun_1= alpha1, alpha_fun_2= alpha2)
+            G, F, _ = _compute_lie_derivative_2nd_order_jacrev(x, barrier_fun= barrier_function, alpha_fun_1= alpha1, alpha_fun_2= alpha2)
         elif cbf["type"] == "state_constraint" and cbf['rel_degree'] == 1:
             p = cbf['rates']
             # Create alpha functions for each relative degree
@@ -119,6 +120,26 @@ def _compute_lie_derivative_2nd_order(x: torch.Tensor, barrier_fun: Callable, al
         psi2 = psi1_dot + alpha_fun_2(psi1)
         # Compute the Lie derivative
         return LgLfb, Lf2b + psi2, psi1
+
+def _compute_lie_derivative_2nd_order_jacrev(x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable,
+                                      alpha_fun_2: Callable):
+    """Compute the Lie derivative of the CBF wrt the dynamics"""
+    # compute appropriate embedding
+    psi0 = barrier_fun(x)
+    Lfb = lambda x: jacrev(barrier_fun)(x) @ _f(x)
+
+    db2_dx = jacrev(Lfb)(x)
+    # db2_dx = jacrev(jacrev(barrier_fun, argnums=0))(x)
+    # db2_dx = hessian(barrier_fun, argnums=0)(x)
+    Lf2b = db2_dx @ _f(x)
+    LgLfb = db2_dx @ _g
+
+    psi1 = lambda x: Lfb(x) + alpha_fun_1(barrier_fun(x))
+    psi1_dot = jacrev(psi1)(x) @ _f(x)
+
+    psi2 = psi1_dot + alpha_fun_2(psi1(x))
+
+    return LgLfb, Lf2b + psi2, psi1(x)
     
 def _compute_lie_derivative_1st_order(x: torch.Tensor, barrier_fun: Callable, alpha_fun_1: Callable):
         """Compute the Lie derivative of the CBF wrt the dynamics"""

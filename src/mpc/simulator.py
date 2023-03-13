@@ -1,5 +1,5 @@
 """Define functions for simulating the performance of an MPC controller"""
-from typing import Optional
+from typing import Optional, List, Tuple
 
 import casadi
 import numpy as np
@@ -166,6 +166,7 @@ def simulate_barriernet(
     n_steps: int,
     substeps: int = 1,
     x_goal: Optional[np.ndarray] = None,
+    x_noise: Optional[List[Tuple]] = None,
     verbose: bool = False,
 ):
     """
@@ -178,6 +179,9 @@ def simulate_barriernet(
         dynamics_fn: the dynamics of the system
         n_steps: how many total steps to simulate
         substeps: how many smaller substeps to use for the integration
+        x_goal: the goal state of the system
+        x_noise: a list of tuples of the form (noise_min, noise_max) for each state (uniform noise)
+        verbose: whether to print progress
     returns:
         - an np.ndarray of timesteps
         - an np.ndarray of states
@@ -200,6 +204,9 @@ def simulate_barriernet(
         t_range = range(n_steps - 1)
     for tstep in t_range:
         # Solve the MPC problem to get the next state
+        if x_noise is not None:
+            for i in range(n_states):
+                x[tstep][i] = x[tstep][i] + np.random.uniform(x_noise[i][0], x_noise[i][1])
         u_current = policy(x[tstep])
         u[tstep] = np.squeeze(u_current)
 

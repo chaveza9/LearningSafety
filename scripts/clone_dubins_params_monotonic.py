@@ -14,7 +14,7 @@ from src.mpc.dynamics_constraints import car_2d_dynamics as dubins_car_dynamics
 from src.mpc.mpc import construct_MPC_problem
 from src.mpc.obstacle_constraints import hypersphere_sdf
 from src.mpc.simulator import simulate_barriernet, simulate_mpc
-from src.clone.classknn_v import ClassKNN as PolicyCloningModel
+from src.clone.classknn import ClassKNN as PolicyCloningModel
 
 
 # -------------------------------------------
@@ -37,7 +37,7 @@ control_bounds = [(-1, 1),
 torch.set_default_dtype(torch.float64)
 # -------- Define Number of cbf and clf constraints --------
 n_cbf = 1  # Number of CBF constraints [b_radius, b_v_min, b_v_max]
-distance_cbf = lambda x, x_obst, radius: (x[0] - x_obst[0])**2 + (x[1] - x_obst[1]) ** 2 - radius ** 2
+distance_cbf = lambda x, x_obst, radius: (x[0] - x_obst[0, 0])**2 + (x[1] - x_obst[0,1]) ** 2 - radius ** 2
 v_min_cbf = lambda x: x[2] - 0.01
 v_max_cbf = lambda x: 2 - x[2]
 cbf = [distance_cbf, v_min_cbf, v_max_cbf]
@@ -142,8 +142,6 @@ def define_dubins_expert(x0, n_steps) -> Tuple[torch.Tensor, torch.Tensor]:
     )
     return torch.from_numpy(x[:-1,:]), torch.from_numpy(u)
 
-
-
 def clone_dubins_barrier_preferences(train=True, path = None):
     # Define Barrier Function
     x_obstacle = torch.tensor([center]).to(device)
@@ -172,9 +170,11 @@ def clone_dubins_barrier_preferences(train=True, path = None):
         x_obst= x_obstacle,
         r_obst= r_obstacle,
         load_from_file=path,
+        use_barrier_net=False,
+        monotonic_type='icnn',
     )
 
-    n_pts = int(0.7e4)
+    n_pts = int(0.5e4)
     n_epochs = 500
     learning_rate = 0.001
 
@@ -200,7 +200,7 @@ def clone_dubins_barrier_preferences(train=True, path = None):
     return cloned_policy
 
 
-def simulate_and_plot(policy):
+def simulate_and_plot(policy, save_img=False, path=None, noise=None):
     # -------------------------------------------
     # Simulate the cloned policy
     # -------------------------------------------
@@ -221,6 +221,7 @@ def simulate_and_plot(policy):
             n_steps,
             substeps=10,
             verbose=True,
+            x_noise=noise,
         )
 
         # Plot it
@@ -241,28 +242,30 @@ def simulate_and_plot(policy):
 
     ax.set_xlim([-3., 2.5])
     ax.set_ylim([-1.0, 1.0])
-    ax.title.set_text("Cloned Dubins Car Policy with models BarrierNet")
+    ax.title.set_text("Cloned Dubins Car Policy with UMNN BarrierNet")
     ax.grid()
     ax.set_aspect("equal")
 
     ax.legend()
-    # Save the figure in vector format using time stamp as name
-    dir = os.path.dirname(__file__)
-    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\figures\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pdf"
-    path = os.path.join(dir, file)
-    plt.savefig(path)
+    if save_img:
+        if path is None:
+            path = os.path.dirname(__file__)
+            # Save the figure in vector format using time stamp as name
+            name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + \
+                  "_dubins_cloned_barriernet_icnn_no_qp_policy.pdf"
+            path = os.path.join(path, "..", "figures", name)
+        plt.savefig(path)
     plt.show()
 
 if __name__ == "__main__":
     # Extract current folder
     dir = os.path.dirname(__file__)
     # Define a file with the current date
-    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file = "..\\data\\" + name + "_dubins_cloned_barriernet_monotonic_policy.pt"
-    path = os.path.join(dir, file)
-
-    path = "G:\\My Drive\\PhD\\Research\\CODES\\GameTheory\\restructured\\data\\2023-02-09_11-15-11_dubins_cloned_barriernet_monotonic_policy.pt"
+    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")+ "_dubins_cloned_barriernet_icnn_no_qp_policy.pt"
+    # Define the path to the file
+    path = os.path.join(dir, "..", "data", name)
     # Define the policy
-    policy = clone_dubins_barrier_preferences(train=False, path= path)
-    simulate_and_plot(policy)
+    policy = clone_dubins_barrier_preferences(train=True, path= path)
+    # Define Uniform noise
+    noise = [(-0.1, 0.1), (-0.1, 0.1), (-0.2, 0.2), (0.0, 0.0)]
+    simulate_and_plot(policy, save_img=True, noise=None)

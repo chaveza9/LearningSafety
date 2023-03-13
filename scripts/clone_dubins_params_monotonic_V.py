@@ -177,9 +177,11 @@ def clone_dubins_barrier_preferences(train=True, path = None):
         x_obst= x_obstacle,
         r_obst= r_obstacle,
         load_from_file=path,
+        use_barrier_net=False,
+        monotonic_type='icnn'
     )
 
-    n_pts = int(0.1e4)
+    n_pts = int(0.5e4)
     n_epochs = 500
     learning_rate = 0.001
 
@@ -205,7 +207,7 @@ def clone_dubins_barrier_preferences(train=True, path = None):
     return cloned_policy
 
 
-def simulate_and_plot(policy):
+def simulate_and_plot(policy, save_img=False, path=None, noise=None):
     # -------------------------------------------
     # Simulate the cloned policy
     # -------------------------------------------
@@ -226,6 +228,7 @@ def simulate_and_plot(policy):
             n_steps,
             substeps=10,
             verbose=True,
+            x_noise=noise,
         )
 
         # Plot it
@@ -251,21 +254,25 @@ def simulate_and_plot(policy):
     ax.set_aspect("equal")
 
     ax.legend()
-    # Save the figure in vector format using time stamp as name
-    dir = os.path.dirname(__file__)
-    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    path = os.path.join(dir, "..", "figures", name
-                        + "_dubins_cloned_barriernet_monotonic_policy_with_v_transform_and_diff_qp.pdf")
-    plt.savefig(path)
+    if save_img:
+        if path is None:
+            path = os.path.dirname(__file__)
+            # Save the figure in vector format using time stamp as name
+            name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + \
+                  "_dubins_cloned_barriernet_icnn_no_qp_policy.pdf"
+            path = os.path.join(path, "..", "figures", name)
+        plt.savefig(path)
     plt.show()
 
 if __name__ == "__main__":
     # Extract current folder
     dir = os.path.dirname(__file__)
     # Define a file with the current date
-    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    name = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")+ "_dubins_cloned_barriernet_icnn_no_qp_policy.pt"
     # Define the path to the file
-    path = os.path.join(dir, "..", "data", name + "_dubins_cloned_barriernet_monotonic_policy.pt")
+    path = os.path.join(dir, "..", "data", name)
     # Define the policy
     policy = clone_dubins_barrier_preferences(train=True, path= path)
-    simulate_and_plot(policy)
+    # Define Uniform noise
+    noise = [(-0.1, 0.1), (-0.1, 0.1), (-0.2, 0.2), (0.0, 0.0)]
+    simulate_and_plot(policy, save_img=True, noise=None)
